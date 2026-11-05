@@ -1,4 +1,5 @@
-import { hasPendingResults, sortRanking } from "@/lib/domain/league/rules";
+import { hasPendingResults } from "@/lib/domain/league/rules";
+import { rankLeague } from "@/lib/domain/league/ranking";
 import type { Battle, LeagueEvent, LeaguePayload } from "@/lib/domain/league/types";
 import type { NotificationEvent } from "./types";
 
@@ -39,8 +40,8 @@ function buildLowCapacityEvent(ev: LeagueEvent, restantes: number): Notification
 function buildLiveEvent(ev: LeagueEvent): NotificationEvent {
   return {
     kind: "event_live",
-    title: "🔴 ¡Estamos en vivo!",
-    body: `${ev.titulo || "La plaza"} está que arde ahora mismo. Conéctate y no te pierdas ni una barra.`,
+    title: "🔥 ¡Ya arrancó!",
+    body: `${ev.titulo || "La fecha"} está que arde en la plaza ahora mismo. Ven a vivirlo, que no te lo cuenten.`,
     url: "/",
   };
 }
@@ -153,8 +154,8 @@ export function diffLeagueForNotifications(
   const prevPending = hasPendingResults(previous.ranking);
   const currPending = hasPendingResults(current.ranking);
 
-  const prevTop3 = sortRanking(previous.ranking).slice(0, 3).map((r) => r.alias);
-  const currTop3 = sortRanking(current.ranking).slice(0, 3).map((r) => r.alias);
+  const prevTop3 = rankLeague(previous.ranking, previous.battles).slice(0, 3).map((r) => r.alias);
+  const currTop3 = rankLeague(current.ranking, current.battles).slice(0, 3).map((r) => r.alias);
   if (prevTop3.length === 3 && currTop3.length === 3 && !arraysEqual(prevTop3, currTop3)) {
     events.push(buildRankingShuffleEvent(currTop3, currPending));
   }

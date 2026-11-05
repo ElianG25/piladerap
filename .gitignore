@@ -51,3 +51,9 @@ next-env.d.ts
 *.tsx.tmp
 .fuse_hidden*
 **/.fuse_hidden*
+
+# Evidencia de revisión de diseño (capturas)
+.impeccable/review/
+.impeccable/mocks/
+.playwright-mcp/
+.impeccable/hook.cache.json

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sortRanking, getPublicEvents, getPublishedBattles, getEventById, isSectionEnabled, getVisibleMedia, getEventPlaylist, hasNoStatsYet, hasPendingResults } from "./rules";
+import { getPublicEvents, getPublishedBattles, getEventById, isSectionEnabled, getVisibleMedia, getEventPlaylist, getEventPlaylistUrl, hasNoStatsYet, hasPendingResults } from "./rules";
 import type { RankingItem, LeagueEvent, Battle, MediaItem } from "./types";
 
 const mkRank = (p: Partial<RankingItem>): RankingItem => ({
@@ -18,22 +18,6 @@ const mkBattle = (p: Partial<Battle>): Battle => ({
 });
 const mkMedia = (p: Partial<MediaItem>): MediaItem => ({
   eventId: "e", tipo: "playlist", titulo: "", url: "https://youtube.com/x", visible: true, orden: 0, ...p,
-});
-
-describe("sortRanking", () => {
-  it("ordena por puntosLiga desc y desempata por victorias", () => {
-    const r = sortRanking([
-      mkRank({ alias: "A", puntosLiga: 10, victorias: 1 }),
-      mkRank({ alias: "B", puntosLiga: 20 }),
-      mkRank({ alias: "C", puntosLiga: 10, victorias: 5 }),
-    ]);
-    expect(r.map((x) => x.alias)).toEqual(["B", "C", "A"]);
-  });
-  it("no muta el array original", () => {
-    const orig = [mkRank({ alias: "A", puntosLiga: 1 }), mkRank({ alias: "B", puntosLiga: 2 })];
-    sortRanking(orig);
-    expect(orig[0].alias).toBe("A");
-  });
 });
 
 describe("getPublicEvents", () => {
@@ -102,6 +86,20 @@ describe("getEventPlaylist", () => {
   it("ignora entradas de media que no son playlist", () => {
     const media = [mkMedia({ eventId: "fecha-2", tipo: "foto" })];
     expect(getEventPlaylist(media, "fecha-2")).toBeNull();
+  });
+});
+
+describe("getEventPlaylistUrl", () => {
+  it("prefiere la columna del evento si es una URL", () => {
+    const ev = mkEvent({ eventId: "f4", youtubePlaylist: "https://youtube.com/playlist?list=A" });
+    expect(getEventPlaylistUrl(ev, [mkMedia({ eventId: "f4", url: "https://youtube.com/B" })])).toBe("https://youtube.com/playlist?list=A");
+  });
+  it("cae a Media cuando el evento trae texto suelto", () => {
+    const ev = mkEvent({ eventId: "f2", youtubePlaylist: "(17) FECHA 2 - YouTube" });
+    expect(getEventPlaylistUrl(ev, [mkMedia({ eventId: "f2", url: "https://youtube.com/B" })])).toBe("https://youtube.com/B");
+  });
+  it("devuelve null si no hay ninguna URL válida", () => {
+    expect(getEventPlaylistUrl(mkEvent({ eventId: "f1" }), [])).toBeNull();
   });
 });
 

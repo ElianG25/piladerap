@@ -21,7 +21,11 @@ Next.js; si algún día cambia, `lib/` no se entera).
 lib/
   domain/league/              Reglas y tipos puros — cero I/O, cero framework.
     types.ts                    Entidades: LeagueEvent, RankingItem, Battle, LeaguePayload...
-    rules.ts                    sortRanking, getPublicEvents, getPublishedBattles, isSectionEnabled
+    rules.ts                    getPublicEvents, getPublishedBattles, getEventPlaylistUrl, isSectionEnabled, hasPendingResults
+    ranking.ts                  rankLeague: orden por puntos de liga + desempate por cruce directo (empate = posición compartida)
+    scoring.ts                  Reglas de puntos: victoria directa 3 / con réplica 2 / derrota con réplica 1 / directa 0
+    rounds.ts                   Orden de rondas (Octavos → Final), agrupar por ronda, encontrar la Final de una fecha
+    profile.ts                  Batallas y récord de un MC (ficha de MC)
     registrationErrors.ts       Códigos de error de inscripción ↔ status HTTP ↔ mensaje de usuario
                                  (única fuente — antes duplicado entre la API y el formulario)
     eventTime.ts                 Combina fechaEvento + horaEvento (12h/24h) en un Date real
@@ -33,6 +37,7 @@ lib/
 
   application/league/         Casos de uso — orquestan dominio + infraestructura.
     getLeague.ts                 Trae y valida la liga completa (usado por /api/league y /api/og)
+    attachPlaylistCovers.ts      Le agrega a cada fecha la portada (foto grupal) de su playlist de YouTube
     registerParticipant.ts       Registra un participante y dispara la notificación
     buildShareHighlights.ts      Elige qué mostrar en la imagen social (fecha destacada, top 3...)
 
@@ -44,6 +49,8 @@ lib/
     sheets/
       sheetsClient.ts            Único lugar que lee SHEETS_GET_URL y hace fetch a Apps Script
       payloadMapper.ts            zod: valida/normaliza el JSON crudo de Sheets → tipos de dominio
+    youtube/
+      playlistCover.ts             Lee la portada firmada de una playlist (og:image) en streaming; cache en memoria 6 h
     telegram/
       telegramNotifier.ts        Notificación best-effort de inscripciones
     security/
@@ -54,7 +61,9 @@ lib/
       subscriptionStore.ts          Redis (Upstash): suscripciones, snapshot de la liga, dedup del recordatorio diario
 
   shared/
-    format.ts                    Helpers de formato reusados por varios componentes (p. ej. initials)
+    format.ts                    initials, formatPoints (medios puntos), formatEventDate
+    youtube.ts                   ID y portadas de YouTube, asHttpUrl (descarta texto suelto de la hoja)
+    calendar.ts                  .ics de una fecha + enlace a Google Maps
 
 app/
   api/
@@ -69,6 +78,7 @@ app/
     useLeagueData.ts             Fetch inicial + auto-refresh de la liga
     useSectionRouter.ts          Sección activa, secciones visibles según Config, URL, swipe
     useEventCountdown.ts         Cuenta regresiva hacia la fecha destacada
+    useModalLayer.ts             Foco atrapado, Escape por capas y scroll bloqueado de los diálogos
     useMediaQuery.ts             Suscripción genérica a media queries
     useParallaxScrollY.ts        Offset de scroll para el parallax del fondo
     usePushSubscription.ts       Soporte/permiso/suscripción push del navegador (detecta iOS sin instalar)
@@ -77,16 +87,15 @@ app/
     leagueClient.ts              fetch del navegador hacia nuestra propia API (no hacia Sheets)
 
   components/
-    home/                        Presentación de la home — reciben props, no hacen fetch ni tienen estado de datos.
-      HomeView.tsx                 Composición completa de la página (hero, nav, secciones, footer)
-      BackgroundLayer.tsx          Fondo (póster/video/gradiente) + glows
-      LoadingScreen.tsx / ErrorScreen.tsx
-      NavIcon.tsx / TypewriterText.tsx
-    league/                      Componentes de dominio de liga (ranking, batallas, fechas, inscripción...)
-                                 — sin cambios de contenido, solo import paths actualizados
+    home/                        HomeView (barra superior + navegación + secciones), LoadingScreen, ErrorScreen, NavIcon
+    league/                      LeagueHero (campeón + foto de la final / cuenta regresiva / en vivo), Scoreboard (ranking),
+                                 McProfileSheet (ficha de MC), BattleArchive (llaves por fecha), EventTimeline, LatestBattles,
+                                 RegistrationCard, ScoringRules, VideoModal, HeroVideo (video de fondo solo en equipos capaces),
+                                 EventActions, EventStatusBadge
     notifications/
-      NotificationBell.tsx         Campanita en la top bar (activar/desactivar; instrucciones en iOS sin instalar)
-      NotificationBanner.tsx        Banner dismisseable de opt-in en la home
+      NotificationBell.tsx         Campana en la barra (activar/desactivar; instrucciones en iOS sin instalar)
+      NotificationBanner.tsx        Aviso cerrable de opt-in en la home
+    ui/                          icons (SVG propios), PilaMark (logo recortado), YouTubeThumb (portadas), buttons (clases)
     ServiceWorkerRegistration.tsx
 
 public/

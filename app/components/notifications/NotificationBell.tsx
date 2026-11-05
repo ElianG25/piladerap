@@ -3,16 +3,12 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePushSubscription } from "@/app/hooks/usePushSubscription";
+import { BellIcon } from "@/app/components/ui/icons";
 
-function BellIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-    </svg>
-  );
-}
+const bellBase =
+  "flex h-11 w-11 items-center justify-center border-2 transition-colors disabled:opacity-50";
 
-/** Campanita en la top bar: activa/desactiva las notificaciones push. En iOS sin instalar, muestra cómo instalarla. */
+/** Campana de la barra superior: activa/desactiva las notificaciones push. En iOS sin instalar, explica cómo instalarla. */
 export function NotificationBell() {
   const { status, isSubscribed, busy, subscribe, unsubscribe } = usePushSubscription();
   const [showIosHint, setShowIosHint] = useState(false);
@@ -23,20 +19,19 @@ export function NotificationBell() {
     return (
       <div className="relative">
         <button
-          type="button"
-          onClick={() => setShowIosHint((v) => !v)}
-          aria-label="Cómo activar notificaciones en iPhone"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-zinc-400 transition hover:border-yellow-400/30 hover:text-yellow-400"
+          type="button" onClick={() => setShowIosHint((v) => !v)}
+          aria-label="Cómo activar notificaciones en iPhone" aria-expanded={showIosHint}
+          className={`${bellBase} border-paper/40 text-paper hover:border-pila hover:text-pila`}
         >
-          <BellIcon filled={false} />
+          <BellIcon />
         </button>
         <AnimatePresence>
           {showIosHint && (
             <motion.div
               initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-              className="absolute right-0 top-11 z-50 w-60 rounded-xl border border-white/[0.1] bg-zinc-950 p-4 text-xs text-zinc-300 shadow-xl"
+              className="absolute right-0 top-12 z-50 w-64 border-2 border-pila bg-ink p-4 text-sm text-paper"
             >
-              <p className="mb-1 font-display font-bold uppercase tracking-wide text-yellow-400">📲 Activa notificaciones</p>
+              <p className="mb-1 font-bold text-pila">Activa las notificaciones</p>
               <p>En iPhone: toca <strong>Compartir</strong> → <strong>Agregar a inicio</strong>, y abre la app desde ahí para poder activarlas.</p>
             </motion.div>
           )}
@@ -47,17 +42,11 @@ export function NotificationBell() {
 
   return (
     <button
-      type="button"
-      onClick={() => (isSubscribed ? unsubscribe() : subscribe())}
-      disabled={busy}
-      aria-pressed={isSubscribed}
+      type="button" onClick={() => (isSubscribed ? unsubscribe() : subscribe())}
+      disabled={busy} aria-pressed={isSubscribed}
       aria-label={isSubscribed ? "Desactivar notificaciones" : "Activar notificaciones"}
       title={isSubscribed ? "Notificaciones activadas" : "Activar notificaciones"}
-      className={`flex h-9 w-9 items-center justify-center rounded-full border transition disabled:opacity-50 ${
-        isSubscribed
-          ? "border-yellow-400/40 bg-yellow-400/[0.1] text-yellow-400"
-          : "border-white/[0.08] bg-white/[0.03] text-zinc-400 hover:border-yellow-400/30 hover:text-yellow-400"
-      }`}
+      className={`${bellBase} ${isSubscribed ? "border-pila bg-pila text-ink" : "border-paper/40 text-paper hover:border-pila hover:text-pila"}`}
     >
       <BellIcon filled={isSubscribed} />
     </button>

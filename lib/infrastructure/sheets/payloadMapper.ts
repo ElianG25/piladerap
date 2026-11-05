@@ -45,6 +45,7 @@ const EventSchema: z.ZodType<LeagueEvent> = z.object({
   inscripcionesAbiertas: bool,
   visible: bool,
   orden: num,
+  coverUrl: z.string().optional(),
 });
 
 const RankingSchema: z.ZodType<RankingItem> = z.object({

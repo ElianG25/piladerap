@@ -24,6 +24,8 @@ export type LeagueEvent = {
   inscripcionesAbiertas: boolean;
   visible: boolean;
   orden: number;
+  /** Portada de la playlist de la fecha (foto grupal). La agrega el servidor; no viene de la hoja. */
+  coverUrl?: string;
 };
 
 export type RankingItem = {
@@ -36,6 +38,12 @@ export type RankingItem = {
   estado: string;
   ultimaFecha: string;
   movimiento: string;
+};
+
+/** Fila de la tabla ya ordenada: posición (con empates compartidos) y si quedó empatada sin cruce directo. */
+export type RankedItem = RankingItem & {
+  posicion: number;
+  empatado: boolean;
 };
 
 export type Battle = {

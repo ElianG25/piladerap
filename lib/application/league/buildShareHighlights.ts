@@ -1,4 +1,4 @@
-import { sortRanking } from "@/lib/domain/league/rules";
+import { rankLeague } from "@/lib/domain/league/ranking";
 import type { LeaguePayload } from "@/lib/domain/league/types";
 
 export type ShareHighlights = {
@@ -10,7 +10,7 @@ export type ShareHighlights = {
 };
 
 function getBadge(estado?: string): string {
-  if (estado === "en_vivo") return "EN VIVO";
+  if (estado === "en_vivo") return "HOY";
   if (estado === "inscripciones") return "INSCRIPCIONES ABIERTAS";
   if (estado === "anunciada") return "FECHA CONFIRMADA";
   return "TEMPORADA 2026";
@@ -25,7 +25,7 @@ function getBadge(estado?: string): string {
 export function buildShareHighlights(league: LeaguePayload | null): ShareHighlights {
   const featured = league?.featuredEvent ?? null;
   const latest = league?.latestCompletedEvent ?? null;
-  const top3 = league ? sortRanking(league.ranking).slice(0, 3) : [];
+  const top3 = league ? rankLeague(league.ranking, league.battles).slice(0, 3) : [];
 
   const sub =
     featured && featured.estado !== "futura"

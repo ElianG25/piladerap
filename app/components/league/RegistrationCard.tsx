@@ -1,9 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import type { LeagueEvent } from "@/lib/domain/league/types";
 import { getErrorMessage } from "@/lib/domain/league/registrationErrors";
+import { formatEventDate } from "@/lib/shared/format";
+import { usePushSubscription } from "@/app/hooks/usePushSubscription";
+import { BellIcon } from "@/app/components/ui/icons";
+import { btnInk, btnPila } from "@/app/components/ui/buttons";
 
 type RegistrationCardProps = {
   activeEvent: LeagueEvent | null;
@@ -12,21 +15,51 @@ type RegistrationCardProps = {
 type FormState = { nombre: string; alias: string; telefono: string; instagram: string };
 const blank: FormState = { nombre: "", alias: "", telefono: "", instagram: "" };
 
+const FIELDS = [
+  { key: "nombre", label: "Nombre completo", type: "text", autoComplete: "name", hint: "" },
+  { key: "alias", label: "Tu AKA (nombre artístico)", type: "text", autoComplete: "nickname", hint: "" },
+  { key: "telefono", label: "Teléfono", type: "tel", autoComplete: "tel-national", hint: "10 dígitos, sin guiones" },
+  { key: "instagram", label: "Instagram (opcional)", type: "text", autoComplete: "off", hint: "" },
+] as const;
+
+/** Estado cerrado: en vez de un formulario apagado, un aviso claro y la forma de enterarse cuando abran. */
+function ClosedNotice() {
+  const { status, isSubscribed, busy, subscribe } = usePushSubscription();
+  return (
+    <div className="on-ink board mt-6 p-5">
+      <p className="text-lg font-bold">La próxima fecha todavía no abre inscripciones.</p>
+      <p className="mt-1 text-base text-muted-ink">Activa los avisos y te escribimos apenas se abran los cupos.</p>
+      {status === "ready" && !isSubscribed && (
+        <button type="button" onClick={subscribe} disabled={busy} className={`${btnPila} mt-4`}>
+          <BellIcon className="h-4 w-4" />
+          {busy ? "…" : "Activar avisos"}
+        </button>
+      )}
+      {isSubscribed && <p className="mt-4 text-base font-bold text-pila">Ya tienes los avisos activados.</p>}
+      {status === "ios_needs_install" && (
+        <p className="mt-4 text-base text-paper">
+          En iPhone: toca Compartir → Agregar a inicio, y abre la app desde ahí para activar los avisos.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function RegistrationCard({ activeEvent, capacity }: RegistrationCardProps) {
-  const [form,    setForm]    = useState<FormState>(blank);
-  const [hp,      setHp]      = useState(""); // honeypot anti-spam (debe quedar vacío)
-  const [status,  setStatus]  = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [form, setForm] = useState<FormState>(blank);
+  const [hp, setHp] = useState(""); // honeypot anti-spam (debe quedar vacío)
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
   const isOpen = Boolean(activeEvent?.inscripcionesAbiertas);
-  const pct    = capacity.max > 0 ? Math.min(100, Math.round((capacity.total / capacity.max) * 100)) : 0;
+  const pct = capacity.max > 0 ? Math.min(100, Math.round((capacity.total / capacity.max) * 100)) : 0;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("loading");
     setMessage("");
     try {
-      const res  = await fetch("/api/league", {
+      const res = await fetch("/api/league", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, website: hp, eventId: activeEvent?.eventId ?? "" }),
@@ -46,122 +79,66 @@ export function RegistrationCard({ activeEvent, capacity }: RegistrationCardProp
     }
   }
 
-  const inputClass = `w-full border-b border-white/[0.1] bg-transparent py-3 text-sm font-bold text-white
-    outline-none placeholder:text-zinc-600 focus:border-yellow-400/50 transition-colors
-    disabled:opacity-40`;
-
   return (
-    <section className="arena-card p-5 sm:p-8">
+    <section aria-labelledby="inscripcion-titulo" className="mx-auto max-w-xl">
+      <h2 id="inscripcion-titulo" className="display text-5xl sm:text-6xl">
+        {isOpen ? "Asegura tu cupo" : "Inscripciones cerradas"}
+      </h2>
 
-      {/* Header */}
-      <div className="mb-8 border-b border-white/[0.05] pb-5">
-        <p className="kicker text-[10px] text-yellow-400 mb-1">
-          Inscripción
-        </p>
-        <h2 className="section-title text-4xl text-white">
-          {isOpen ? "Asegura tu cupo" : "Inscripciones cerradas"}
-        </h2>
-        <p className="mt-2 text-sm text-zinc-500">
-          {isOpen
-            ? `Cupos disponibles para ${activeEvent?.titulo || "la próxima fecha"}.`
-            : "Cuando la próxima fecha abra inscripciones, el formulario estará activo aquí."}
-        </p>
-      </div>
+      {!isOpen ? (
+        <ClosedNotice />
+      ) : (
+        <>
+          <p className="mt-3 text-base text-muted">
+            {`${activeEvent?.titulo || "La próxima fecha"}${activeEvent?.fechaEvento ? ` · ${formatEventDate(activeEvent.fechaEvento)}` : ""}${activeEvent?.ubicacion ? ` · ${activeEvent.ubicacion}` : ""}.`}
+          </p>
 
-      {/* Capacity bar */}
-      <div className="mb-8 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-display font-bold uppercase tracking-[0.28em] text-zinc-600 mb-1">Cupos</p>
-          <p className="text-4xl font-mono font-extrabold tabular-nums text-white leading-none">
-            {capacity.total}
-            <span className="text-xl text-zinc-600">/{capacity.max}</span>
-          </p>
-        </div>
-        <div className="flex-1 max-w-48">
-          <p className="text-right text-xs font-bold text-yellow-300 mb-1.5">
-            {capacity.restantes} disponibles
-          </p>
-          <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-            <motion.div
-              initial={{ width: 0 }} animate={{ width: `${pct}%` }}
-              transition={{ duration: 1, delay: 0.3 }}
-              className="h-full rounded-full bg-yellow-400"
-            />
+          <div className="mt-5">
+            <p className="num text-lg font-bold">{capacity.restantes} de {capacity.max} cupos libres</p>
+            <div className="mt-1.5 h-3 border-2 border-ink" role="presentation">
+              <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Honeypot anti-spam: oculto a humanos, los bots lo rellenan */}
-        <input
-          type="text"
-          name="website"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          value={hp}
-          onChange={(e) => setHp(e.target.value)}
-          style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
-        />
-        {([
-          { key: "nombre",    placeholder: "Nombre completo",       type: "text"    },
-          { key: "alias",     placeholder: "AKA / Nombre artístico", type: "text"    },
-          { key: "telefono",  placeholder: "Teléfono (10 dígitos)",  type: "tel"     },
-          { key: "instagram", placeholder: "Instagram (opcional)",   type: "text"    },
-        ] as const).map(({ key, placeholder, type }) => (
-          <div key={key} className="relative">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            {/* Honeypot anti-spam: oculto a humanos, los bots lo rellenan */}
             <input
-              value={form[key]}
-              type={type}
-              placeholder={placeholder}
-              inputMode={key === "telefono" ? "numeric" : undefined}
-              onChange={(e) => {
-                const val = key === "telefono"
-                  ? e.target.value.replace(/\D/g, "").slice(0, 10)
-                  : e.target.value;
-                setForm((c) => ({ ...c, [key]: val }));
-              }}
-              disabled={!isOpen || status === "loading"}
-              className={inputClass}
+              type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"
+              value={hp} onChange={(e) => setHp(e.target.value)}
+              style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
             />
-          </div>
-        ))}
+            {FIELDS.map(({ key, label, type, autoComplete, hint }) => (
+              <div key={key}>
+                <label htmlFor={`reg-${key}`} className="text-sm font-bold">{label}</label>
+                {hint && <span className="ml-2 text-sm text-muted">{hint}</span>}
+                <input
+                  id={`reg-${key}`}
+                  value={form[key]} type={type} autoComplete={autoComplete}
+                  inputMode={key === "telefono" ? "numeric" : undefined}
+                  onChange={(e) => {
+                    const val = key === "telefono" ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value;
+                    setForm((c) => ({ ...c, [key]: val }));
+                  }}
+                  disabled={status === "loading"}
+                  className="mt-1 min-h-12 w-full border-2 border-ink bg-paper px-3 text-ink focus:bg-white disabled:opacity-50"
+                />
+              </div>
+            ))}
 
-        <button
-          type="submit"
-          disabled={!isOpen || status === "loading"}
-          className="relative w-full overflow-hidden btn-gold rounded-xl py-3.5 text-sm disabled:cursor-not-allowed disabled:opacity-40 disabled:saturate-0"
-        >
-          {status === "loading" ? (
-            <span className="flex items-center justify-center gap-2">
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                className="inline-block h-4 w-4 rounded-full border-2 border-black/30 border-t-black"
-              />
-              Enviando...
-            </span>
-          ) : "Inscribirme"}
-        </button>
-      </form>
+            <button type="submit" disabled={status === "loading"} className={`${btnInk} w-full`}>
+              {status === "loading" ? "Enviando…" : "Inscribirme"}
+            </button>
+          </form>
+        </>
+      )}
 
-      {/* Feedback */}
-      <AnimatePresence>
+      <div role="status" aria-live="polite">
         {message && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            role="status" aria-live="polite"
-            className={`mt-5 rounded-xl border px-4 py-3 text-sm font-bold ${
-              status === "success"
-                ? "border-emerald-500/25 bg-emerald-500/[0.07] text-emerald-300"
-                : "border-yellow-400/25 bg-yellow-400/[0.07] text-yellow-200"
-            }`}
-          >
+          <p className={`mt-5 px-4 py-3 text-base font-bold ${status === "success" ? "bg-ink text-pila" : "bg-live text-paper"}`}>
             {message}
-          </motion.div>
+          </p>
         )}
-      </AnimatePresence>
+      </div>
     </section>
   );
 }

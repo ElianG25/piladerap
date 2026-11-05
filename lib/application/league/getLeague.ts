@@ -1,5 +1,6 @@
 import { fetchLeaguePayloadRaw } from "@/lib/infrastructure/sheets/sheetsClient";
 import { adaptPayload } from "@/lib/infrastructure/sheets/payloadMapper";
+import { attachPlaylistCovers } from "@/lib/application/league/attachPlaylistCovers";
 import type { LeaguePayload } from "@/lib/domain/league/types";
 
 /**
@@ -10,5 +11,6 @@ import type { LeaguePayload } from "@/lib/domain/league/types";
  */
 export async function getLeague(revalidateSeconds: number): Promise<LeaguePayload> {
   const raw = await fetchLeaguePayloadRaw(revalidateSeconds);
-  return adaptPayload(raw as Record<string, unknown>).league;
+  const league = adaptPayload(raw as Record<string, unknown>).league;
+  return attachPlaylistCovers(league);
 }

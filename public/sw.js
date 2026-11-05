@@ -3,7 +3,7 @@
 //  - navegaciones (HTML): network-first  → el shell nunca queda viejo tras un deploy
 //  - /api/*: network-first con fallback a caché
 //  - estáticos: cache-first
-const CACHE = "piladerap-v2";
+const CACHE = "piladerap-v3";
 const STATIC = ["/logo.png", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

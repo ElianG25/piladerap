@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-05T00:00:00Z",
+  "title": "Design System: Pila de Ra'",
+  "extensions": {
+    "colorMeta": {
+      "concrete":   { "role": "neutral",   "displayName": "Wall Concrete", "canonical": "#e1e1dc", "tonalRamp": ["#2a2a28", "#4b4b46", "#6e6e68", "#9a9a94", "#b9b9b3", "#d3d3cd", "#e1e1dc", "#f2f2ee"] },
+      "concrete-2": { "role": "neutral",   "displayName": "Shadowed Concrete", "canonical": "#d3d3cd", "tonalRamp": ["#2a2a28", "#4b4b46", "#6e6e68", "#9a9a94", "#b9b9b3", "#d3d3cd", "#e1e1dc", "#f2f2ee"] },
+      "ink":        { "role": "neutral",   "displayName": "Street Ink", "canonical": "#101010", "tonalRamp": ["#101010", "#1b1b19", "#34342f", "#4b4b46", "#6e6e68", "#a6a69e", "#d3d3cd", "#f2f2ee"] },
+      "ink-2":      { "role": "neutral",   "displayName": "Ink Raised", "canonical": "#1b1b19", "tonalRamp": ["#101010", "#1b1b19", "#34342f", "#4b4b46", "#6e6e68", "#a6a69e", "#d3d3cd", "#f2f2ee"] },
+      "ink-line":   { "role": "neutral",   "displayName": "Ink Line", "canonical": "#34342f", "tonalRamp": ["#101010", "#1b1b19", "#34342f", "#4b4b46", "#6e6e68", "#a6a69e", "#d3d3cd", "#f2f2ee"] },
+      "paper":      { "role": "neutral",   "displayName": "Poster Paper", "canonical": "#f2f2ee", "tonalRamp": ["#4b4b46", "#6e6e68", "#a6a69e", "#c4c4be", "#d3d3cd", "#e1e1dc", "#f2f2ee", "#ffffff"] },
+      "muted":      { "role": "neutral",   "displayName": "Muted on Concrete", "canonical": "#4b4b46", "tonalRamp": ["#101010", "#1b1b19", "#34342f", "#4b4b46", "#6e6e68", "#a6a69e", "#d3d3cd", "#f2f2ee"] },
+      "muted-ink":  { "role": "neutral",   "displayName": "Muted on Ink", "canonical": "#a6a69e", "tonalRamp": ["#34342f", "#4b4b46", "#6e6e68", "#8a8a83", "#a6a69e", "#c4c4be", "#d3d3cd", "#f2f2ee"] },
+      "pila":       { "role": "primary",   "displayName": "Pila Yellow", "canonical": "#fdee0e", "tonalRamp": ["#4d4700", "#7a7000", "#a89b00", "#d0c200", "#e6d800", "#fdee0e", "#fff36b", "#fff9b8"] },
+      "pila-deep":  { "role": "primary",   "displayName": "Pila Deep", "canonical": "#e6d800", "tonalRamp": ["#4d4700", "#7a7000", "#a89b00", "#c8ba00", "#e6d800", "#fdee0e", "#fff36b", "#fff9b8"] },
+      "live":       { "role": "secondary", "displayName": "Event-Day Red", "canonical": "#d42e12", "tonalRamp": ["#3d0e05", "#6b1a0b", "#9a230d", "#d42e12", "#e8553a", "#f08a74", "#f7b8aa", "#fbdcd5"] }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display (Anton)", "purpose": "Hero headline: champion or next date. Uppercase, 0.92 line-height." },
+      "headline": { "displayName": "Headline (Anton)", "purpose": "Section titles and large numerals." },
+      "title":    { "displayName": "Title (Archivo 700)", "purpose": "MC aliases and battle titles, uppercase." },
+      "body":     { "displayName": "Body (Archivo)", "purpose": "Descriptions and definition rows." },
+      "label":    { "displayName": "Label (Archivo 700)", "purpose": "Buttons, status badges, chips, nav tabs; uppercase, +0.025em." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Section changes, hero headline rise, modal and sheet entry." },
+      { "name": "section-slide", "value": "0.22s, 24px x-offset + fade", "purpose": "Switching between Inicio, Ranking, Fechas, Batallas, Inscripción." },
+      { "name": "skeleton-pulse", "value": "1.4s ease-in-out infinite to 55% opacity", "purpose": "Loading blocks of concrete; disabled under prefers-reduced-motion." },
+      { "name": "hero-video-fade", "value": "opacity 1s", "purpose": "Background video fade-in after load; mounts only on capable desktop devices." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "container", "value": "72rem (max-w-6xl)" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Ink Button",
+      "kind": "button",
+      "refersTo": "button-ink",
+      "description": "Primary action on yellow or concrete.",
+      "html": "<button class=\"ds-btn-ink\">Quiero tirar</button>",
+      "css": ".ds-btn-ink { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; background: #101010; color: #fdee0e; border: 0; border-radius: 0; font: 700 14px/1 Archivo, system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; transition: background-color .15s; } .ds-btn-ink:hover { background: #1b1b19; } .ds-btn-ink:focus-visible { outline: 3px solid #101010; outline-offset: 2px; } .ds-btn-ink:disabled { opacity: .4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Pila Button",
+      "kind": "button",
+      "refersTo": "button-pila",
+      "description": "Primary action on an ink panel.",
+      "html": "<div class=\"ds-on-ink\"><button class=\"ds-btn-pila\">Activar avisos</button></div>",
+      "css": ".ds-on-ink { background: #101010; padding: 16px; } .ds-btn-pila { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; background: #fdee0e; color: #101010; border: 0; border-radius: 0; font: 700 14px/1 Archivo, system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; transition: background-color .15s; } .ds-btn-pila:hover { background: #f2f2ee; } .ds-btn-pila:focus-visible { outline: 3px solid #fdee0e; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action on yellow or concrete.",
+      "html": "<button class=\"ds-btn-outline\">Ver el ranking</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; background: transparent; color: #101010; border: 2px solid #101010; border-radius: 0; font: 700 14px/1 Archivo, system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; transition: background-color .15s, color .15s; } .ds-btn-outline:hover { background: #101010; color: #fdee0e; } .ds-btn-outline:focus-visible { outline: 3px solid #101010; outline-offset: 2px; }"
+    },
+    {
+      "name": "Scoreboard",
+      "kind": "card",
+      "refersTo": "scoreboard",
+      "description": "Ink panel with ranked rows, leader in yellow.",
+      "html": "<section class=\"ds-board\"><h2 class=\"ds-board-title\">Ranking</h2><ul class=\"ds-board-list\"><li class=\"ds-row ds-lead\"><span class=\"ds-pos\">1</span><span class=\"ds-name\">Alias <b class=\"ds-chip\">Campeón</b></span><span class=\"ds-pts\">24</span></li><li class=\"ds-row\"><span class=\"ds-pos\">2</span><span class=\"ds-name\">Otro MC</span><span class=\"ds-pts\">19</span></li></ul></section>",
+      "css": ".ds-board { background: #101010; color: #f2f2ee; border-radius: 4px; overflow: hidden; font-family: Archivo, system-ui, sans-serif; } .ds-board-title { margin: 0; padding: 16px 16px 8px; font: 400 40px/0.92 Anton, Impact, sans-serif; text-transform: uppercase; letter-spacing: .01em; } .ds-board-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid #34342f; } .ds-row { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; min-height: 56px; padding: 8px 12px; border-bottom: 1px solid #34342f; font-weight: 700; text-transform: uppercase; } .ds-row:hover { background: #1b1b19; } .ds-pos, .ds-pts { font: 400 30px/1 Anton, Impact, sans-serif; font-variant-numeric: tabular-nums; } .ds-lead { color: #fdee0e; } .ds-chip { background: #fdee0e; color: #101010; font-size: 12px; padding: 4px 6px; margin-left: 8px; }"
+    },
+    {
+      "name": "Hero Slab",
+      "kind": "card",
+      "refersTo": "hero-slab",
+      "description": "Yellow block with the champion in Display type and ink countdown tiles.",
+      "html": "<section class=\"ds-slab\"><h1 class=\"ds-slab-title\">Campeón</h1><p class=\"ds-slab-lead\">Campeón de la Fecha 4</p><div class=\"ds-tiles\"><div class=\"ds-tile\"><span>03</span><small>días</small></div><div class=\"ds-tile\"><span>12</span><small>horas</small></div></div></section>",
+      "css": ".ds-slab { background: #fdee0e; color: #101010; border: 2px solid #101010; padding: 28px; font-family: Archivo, system-ui, sans-serif; } .ds-slab-title { margin: 0; font: 400 80px/0.92 Anton, Impact, sans-serif; text-transform: uppercase; letter-spacing: .01em; } .ds-slab-lead { margin: 8px 0 16px; font-size: 18px; font-weight: 700; } .ds-tiles { display: flex; gap: 8px; } .ds-tile { width: 80px; padding: 8px 4px; text-align: center; background: #101010; color: #fdee0e; } .ds-tile span { display: block; font: 400 48px/1 Anton, Impact, sans-serif; font-variant-numeric: tabular-nums; } .ds-tile small { color: #f2f2ee; font-size: 12px; font-weight: 600; }"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "refersTo": "status-badge-live",
+      "description": "Event states distinguished by shape and text; red only for event day.",
+      "html": "<span class=\"ds-badge ds-b-ann\">Anunciada</span> <span class=\"ds-badge ds-b-ins\">Inscripciones abiertas</span> <span class=\"ds-badge ds-b-live\">Hoy</span> <span class=\"ds-badge ds-b-fin\">Finalizada</span>",
+      "css": ".ds-badge { display: inline-flex; padding: 4px 8px; font: 700 12px/1 Archivo, system-ui, sans-serif; text-transform: uppercase; letter-spacing: .025em; } .ds-b-ann { background: #fdee0e; color: #101010; } .ds-b-ins { background: #101010; color: #fdee0e; } .ds-b-live { background: #d42e12; color: #f2f2ee; } .ds-b-fin { background: #101010; color: #f2f2ee; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "Registration field: 2px ink border, paper fill, square.",
+      "html": "<label class=\"ds-label\" for=\"ds-f\">Tu AKA (nombre artístico)</label><input id=\"ds-f\" class=\"ds-input\" type=\"text\">",
+      "css": ".ds-label { display: block; font: 700 14px Archivo, system-ui, sans-serif; color: #101010; } .ds-input { margin-top: 4px; width: 100%; min-height: 48px; padding: 0 12px; background: #f2f2ee; color: #101010; border: 2px solid #101010; border-radius: 0; font: 16px Archivo, system-ui, sans-serif; } .ds-input:focus-visible { background: #fff; outline: 3px solid #101010; outline-offset: 2px; }"
+    },
+    {
+      "name": "Bottom Nav (mobile)",
+      "kind": "nav",
+      "refersTo": "scoreboard",
+      "description": "Fixed ink bar; active tab yellow with a 4px yellow top bar.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-tab ds-tab-on\">Inicio</button><button class=\"ds-tab\">Ranking</button><button class=\"ds-tab\">Fechas</button></nav>",
+      "css": ".ds-nav { display: grid; grid-template-columns: repeat(3, 1fr); height: 64px; background: #101010; border-top: 2px solid #34342f; } .ds-tab { position: relative; background: transparent; border: 0; color: #a6a69e; font: 700 13px Archivo, system-ui, sans-serif; cursor: pointer; } .ds-tab-on { color: #fdee0e; } .ds-tab-on::before { content: ''; position: absolute; left: 12px; right: 12px; top: 0; height: 4px; background: #fdee0e; } .ds-tab:focus-visible { outline: 3px solid #fdee0e; outline-offset: -3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La pared de la plaza",
+    "overview": "The site is a street poster pasted on the league's wall with the official scoreboard mounted on top. Ground is light concrete, type and rules are ink, and the one loud color is the yellow of the pila, used as a flat slab at page scale. The only imagery is real: YouTube thumbnails of the battles and playlist cover photos, loaded remotely and never filtered.\n\nDensity is medium and operational: phone-first, tap targets of 44-48px, big tabular numbers, and rules that are visible on the page. Surfaces are flat and hard-edged. Depth comes from the concrete / ink / yellow contrast between blocks, never from shadows.",
+    "keyCharacteristics": [
+      "Concrete ground, ink panels, one yellow slab per view.",
+      "Anton uppercase for headlines and big numerals; Archivo for everything read.",
+      "Square corners everywhere; the ink scoreboard panel alone carries a 4px radius.",
+      "2px ink rules separate content; thin ink-line (#34342f) rules separate rows inside ink panels.",
+      "Zero shadows, zero gradients, zero blur.",
+      "Status is carried by shape and text, color is secondary."
+    ],
+    "rules": [
+      { "name": "The Slab Rule", "body": "Yellow is a full block (hero slab, notice bar, chip), never a thin accent, glow, or gradient. One slab per viewport.", "section": "colors" },
+      { "name": "The Ink Pair Rule", "body": "Text on yellow is ink; text on ink is paper or yellow; ink buttons carry yellow text. Never yellow text on concrete.", "section": "colors" },
+      { "name": "The Red Is Today Rule", "body": "Red appears only for event-day status and errors.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Every score, record, count, and countdown uses tabular numerals (.num).", "section": "typography" },
+      { "name": "The Real Text Rule", "body": "Labels are real information (column heads, statuses), never decorative overline text above headings.", "section": "typography" },
+      { "name": "The Flat Wall Rule", "body": "Nothing floats. Separation is a rule or a change of material, never a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use yellow as a block with ink text, one slab per view.",
+      "Do put the leader, champion, and totals in Anton tabular numerals.",
+      "Do use 2px ink rules between content on concrete and ink-line rules inside ink panels.",
+      "Do switch the focus ring to yellow on ink surfaces and keep it ink on light surfaces (3px, 2px offset).",
+      "Do keep tap targets at 44px or more (buttons 48px).",
+      "Do use only real photos (YouTube thumbnails, playlist covers) without filters; keep the crop anchored at 50% 20%.",
+      "Do state rules and uncertainty in plain text (scoring rules, tie rule, provisional notice)."
+    ],
+    "donts": [
+      "Don't use shadows, gradients, glows, or blur; the build has none.",
+      "Don't round corners beyond the 4px scoreboard panel.",
+      "Don't add dark \"esports arena\" gold-on-black styling or metric-card grids.",
+      "Don't use red for anything other than event-day status and errors.",
+      "Don't label en_vivo as a live stream; it means event day.",
+      "Don't put yellow text on concrete."
+    ]
+  }
+}

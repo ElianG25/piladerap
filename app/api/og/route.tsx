@@ -15,7 +15,7 @@ export async function GET() {
         style={{
           width: 1200,
           height: 630,
-          backgroundColor: "#000000",
+          backgroundColor: "#101010",
           color: "#ffffff",
           display: "flex",
           flexDirection: "column",
@@ -32,15 +32,15 @@ export async function GET() {
             width: "100%",
           }}
         >
-          <div style={{ display: "flex", fontSize: 42, fontWeight: 900, color: "#facc15" }}>
+          <div style={{ display: "flex", fontSize: 42, fontWeight: 900, color: "#fdee0e" }}>
             PILA DE RA&apos;
           </div>
 
           <div
             style={{
               display: "flex",
-              backgroundColor: "#facc15",
-              color: "#000000",
+              backgroundColor: "#fdee0e",
+              color: "#101010",
               borderRadius: 999,
               padding: "12px 22px",
               fontSize: 22,
@@ -83,7 +83,7 @@ export async function GET() {
                   padding: "20px 12px",
                 }}
               >
-                <div style={{ display: "flex", fontSize: 18, fontWeight: 900, color: i === 0 ? "#facc15" : "#a1a1aa" }}>
+                <div style={{ display: "flex", fontSize: 18, fontWeight: 900, color: i === 0 ? "#fdee0e" : "#a1a1aa" }}>
                   {`#${i + 1}`}
                 </div>
                 <div style={{ display: "flex", fontSize: 26, fontWeight: 900, color: "#ffffff", marginTop: 6 }}>
@@ -106,7 +106,7 @@ export async function GET() {
               }}
             >
               <div style={{ display: "flex", fontSize: 18, color: "#a1a1aa" }}>Último campeón</div>
-              <div style={{ display: "flex", fontSize: 32, fontWeight: 900, color: "#facc15" }}>
+              <div style={{ display: "flex", fontSize: 32, fontWeight: 900, color: "#fdee0e" }}>
                 {latestChampion}
               </div>
             </div>

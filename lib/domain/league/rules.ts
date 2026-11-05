@@ -1,14 +1,5 @@
 import type { Battle, LeagueEvent, MediaItem, RankingItem } from "./types";
-
-export function sortRanking(ranking: RankingItem[]) {
-  return [...ranking].sort((a, b) => {
-    if (b.puntosLiga !== a.puntosLiga) return b.puntosLiga - a.puntosLiga;
-    if (b.victorias !== a.victorias) return b.victorias - a.victorias;
-    if (b.replicas !== a.replicas) return b.replicas - a.replicas;
-    if (a.derrotas !== b.derrotas) return a.derrotas - b.derrotas;
-    return a.alias.localeCompare(b.alias);
-  });
-}
+import { asHttpUrl } from "@/lib/shared/youtube";
 
 export function getPublicEvents(events: LeagueEvent[]) {
   return events
@@ -38,6 +29,14 @@ export function getVisibleMedia(media: MediaItem[]) {
 /** Playlist de YouTube asociada a un evento (si existe). */
 export function getEventPlaylist(media: MediaItem[], eventId: string): MediaItem | null {
   return media.find((item) => item.eventId === eventId && item.tipo === "playlist") ?? null;
+}
+
+/**
+ * Enlace a la playlist de una fecha: primero la columna del evento, y si no es
+ * una URL real (la hoja a veces trae texto pegado), la hoja Media.
+ */
+export function getEventPlaylistUrl(event: LeagueEvent, media: MediaItem[]): string | null {
+  return asHttpUrl(event.youtubePlaylist) ?? asHttpUrl(getEventPlaylist(media, event.eventId)?.url);
 }
 
 /**
