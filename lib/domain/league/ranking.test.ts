@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { rankLeague } from "./ranking";
 import { battlePoints, isReplica } from "./scoring";
 import { getMcBattles, summarizeMcBattles } from "./profile";
-import { getFinalBattle, groupByRound, roundRank } from "./rounds";
+import { getFinalBattle, groupByRound, orderBracketRounds, roundRank } from "./rounds";
 import type { Battle, RankingItem } from "./types";
 
 const mkRank = (p: Partial<RankingItem>): RankingItem => ({
@@ -104,5 +104,59 @@ describe("rounds", () => {
   it("encuentra la final sin confundirla con la semifinal", () => {
     const f = getFinalBattle([mkBattle({ battleId: "s", ronda: "Semifinal" }), mkBattle({ battleId: "f", ronda: "Final" })], "e");
     expect(f?.battleId).toBe("f");
+  });
+});
+
+describe("orderBracketRounds", () => {
+  // Fecha 4 real, con las batallas de Cuartos y Octavos en el orden de la hoja (que no cuadra)
+  const b = (id: string, ronda: string, mc1: string, mc2: string, orden: number) =>
+    mkBattle({ battleId: id, ronda, mc1, mc2, orden, ganador: mc1, perdedor: mc2 });
+  const rounds = [
+    { ronda: "Octavos", battles: [
+      b("o1", "Octavos", "Chase", "Felpa Divo", 1), b("o2", "Octavos", "Mecha", "Numenosis", 2),
+      b("o3", "Octavos", "Baltrip", "Leamback", 3), b("o4", "Octavos", "Jakob", "Kico Rankiao", 4),
+      b("o5", "Octavos", "Aekis", "Draco", 5), b("o6", "Octavos", "Th3ra", "R16", 6),
+      b("o7", "Octavos", "Jonah", "Reimy", 7), b("o8", "Octavos", "Inty", "Dinamita", 8),
+    ] },
+    { ronda: "Cuartos", battles: [
+      b("c1", "Cuartos", "Kico Rankiao", "Numenosis", 9), b("c2", "Cuartos", "Draco", "Dinamita", 10),
+      b("c3", "Cuartos", "Felpa Divo", "Leamback", 11), b("c4", "Cuartos", "R16", "Reimy", 12),
+    ] },
+    { ronda: "Semifinal", battles: [b("s1", "Semifinal", "Reimy", "Dinamita", 13), b("s2", "Semifinal", "Leamback", "Numenosis", 14)] },
+    { ronda: "Final", battles: [b("f", "Final", "Numenosis", "Dinamita", 15)] },
+  ];
+
+  it("ordena las rondas para que cuadren según quién peleó contra quién", () => {
+    const { rounds: ordered, problems } = orderBracketRounds(rounds);
+    expect(problems).toEqual([]);
+    const ids = (i: number) => ordered[i].battles.map((x) => x.battleId);
+    expect(ids(3)).toEqual(["f"]);
+    expect(ids(2)).toEqual(["s2", "s1"]); // la Final es Numenosis vs Dinamita
+    expect(ids(1)).toEqual(["c3", "c1", "c4", "c2"]);
+    expect(ids(0)).toEqual(["o1", "o3", "o4", "o2", "o6", "o7", "o5", "o8"]);
+  });
+
+  it("cada batalla queda al lado de la que la alimenta", () => {
+    const { rounds: ordered } = orderBracketRounds(rounds);
+    // en cada ronda posterior, la batalla i debe tener como participantes a ganadores/participantes de las posiciones 2i y 2i+1 anteriores
+    for (let k = 1; k < ordered.length; k++) {
+      ordered[k].battles.forEach((later, i) => {
+        const feeders = [ordered[k - 1].battles[2 * i], ordered[k - 1].battles[2 * i + 1]];
+        const players = [later.mc1, later.mc2];
+        for (const p of players) {
+          expect(feeders.some((fd) => [fd.mc1, fd.mc2].includes(p))).toBe(true);
+        }
+      });
+    }
+  });
+
+  it("avisa cuando un MC aparece en una ronda sin haber peleado en la anterior", () => {
+    const broken = [
+      { ronda: "Semifinal", battles: [b("s1", "Semifinal", "A", "B", 1), b("s2", "Semifinal", "C", "D", 2)] },
+      { ronda: "Final", battles: [b("f", "Final", "A", "Z", 3)] },
+    ];
+    const { problems } = orderBracketRounds(broken);
+    expect(problems.length).toBeGreaterThan(0);
+    expect(problems.join(" ")).toContain("Z");
   });
 });

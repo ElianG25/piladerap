@@ -1,6 +1,6 @@
 import type { Battle, LeagueEvent, LeaguePayload } from "./types";
 import { isReplica } from "./scoring";
-import { getFinalBattle } from "./rounds";
+import { getFinalBattle, groupByRound, orderBracketRounds } from "./rounds";
 import { hasNoStatsYet } from "./rules";
 import { asHttpUrl, getYouTubeId } from "@/lib/shared/youtube";
 import { parseEventDate } from "./eventTime";
@@ -139,6 +139,15 @@ export function validateLeagueData(league: LeaguePayload): DataIssue[] {
         message: `tipoResultado "${b.tipoResultado}" no es ni directa ni replica, así que se cuenta como directa.` });
     if (b.youtubeUrl && !getYouTubeId(b.youtubeUrl))
       add({ severity: "warning", code: "VIDEO_NO_VALIDO", where: battleWhere(b), message: `youtubeUrl "${b.youtubeUrl.slice(0, 50)}" no parece un video de YouTube.` });
+  }
+
+  // Que las rondas de cada fecha encajen como llaves (quién pasó a la ronda siguiente)
+  for (const e of events) {
+    const rounds = groupByRound(battles.filter((b) => b.eventId === e.eventId)).filter((g) => norm(g.ronda) !== "tercer puesto");
+    if (rounds.length < 2) continue;
+    for (const problem of orderBracketRounds(rounds).problems)
+      add({ severity: "warning", code: "LLAVES_NO_CUADRAN", where: `Batallas · ${e.titulo}`, message: problem,
+        hint: "Las llaves de la web usan quién peleó contra quién; revisa los nombres de esa ronda." });
   }
 
   // El mismo MC dos veces en la misma ronda de una fecha

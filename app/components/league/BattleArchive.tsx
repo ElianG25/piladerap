@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type { Battle, LeagueEvent, MediaItem } from "@/lib/domain/league/types";
 import { getEventPlaylistUrl } from "@/lib/domain/league/rules";
-import { groupByRound } from "@/lib/domain/league/rounds";
+import { groupByRound, orderBracketRounds } from "@/lib/domain/league/rounds";
 import { isReplica } from "@/lib/domain/league/scoring";
 import { getYouTubeId } from "@/lib/shared/youtube";
 import { ExternalIcon, PlayIcon } from "@/app/components/ui/icons";
@@ -77,7 +77,7 @@ function StackedRounds({ rounds, onPlay, className = "" }: { rounds: Round[]; on
 }
 
 /** Llaves reales: cada ronda ocupa el doble de filas que la anterior y se unen con líneas. */
-function Bracket({ rounds, onPlay }: { rounds: Round[]; onPlay: (v: NonNullable<PlayPayload>) => void }) {
+function Bracket({ rounds, connectors, onPlay }: { rounds: Round[]; connectors: boolean; onPlay: (v: NonNullable<PlayPayload>) => void }) {
   const base = rounds[0].battles.length;
   return (
     <div className="hidden gap-x-12 lg:grid" style={{ gridTemplateColumns: `repeat(${rounds.length}, minmax(0, 1fr))` }}>
@@ -91,8 +91,8 @@ function Bracket({ rounds, onPlay }: { rounds: Round[]; onPlay: (v: NonNullable<
               {g.battles.map((b, i) => (
                 <div key={b.battleId} className="relative flex items-center" style={{ gridRow: `span ${span}` }}>
                   <MatchCard battle={b} onPlay={onPlay} />
-                  {col > 0 && <span aria-hidden className="absolute right-full top-1/2 w-6 border-t-2 border-ink" />}
-                  {!isLast && (
+                  {connectors && col > 0 && <span aria-hidden className="absolute right-full top-1/2 w-6 border-t-2 border-ink" />}
+                  {connectors && !isLast && (
                     <>
                       <span aria-hidden className="absolute left-full top-1/2 w-6 border-t-2 border-ink" />
                       <span aria-hidden
@@ -123,13 +123,15 @@ export function BattleArchive({ battles, events, media }: BattleArchiveProps) {
   const current = eventsWithBattles.find((e) => e.eventId === selectedId) ?? eventsWithBattles[0] ?? null;
   const playlistUrl = current ? getEventPlaylistUrl(current, media) : null;
 
-  const { main, third, isBracket } = useMemo(() => {
+  const { main, bracketRounds, connectors, third, isBracket } = useMemo(() => {
     const all = current ? groupByRound(battles.filter((b) => b.eventId === current.eventId)) : [];
     const mainRounds = all.filter((g) => norm(g.ronda) !== "tercer puesto");
     const thirdRound = all.find((g) => norm(g.ronda) === "tercer puesto") ?? null;
     const counts = mainRounds.map((g) => g.battles.length);
     const bracket = counts.length >= 2 && counts.every((c, i) => i === 0 || c * 2 === counts[i - 1]);
-    return { main: mainRounds, third: thirdRound, isBracket: bracket };
+    // Las llaves se ordenan por quién peleó contra quién, no por el orden de la hoja.
+    const aligned = bracket ? orderBracketRounds(mainRounds) : { rounds: mainRounds, problems: [] as string[] };
+    return { main: mainRounds, bracketRounds: aligned.rounds, connectors: aligned.problems.length === 0, third: thirdRound, isBracket: bracket };
   }, [battles, current]);
 
   const stacked = [...main, ...(third ? [third] : [])];
@@ -174,7 +176,7 @@ export function BattleArchive({ battles, events, media }: BattleArchiveProps) {
           <div className="mt-6">
             {isBracket ? (
               <>
-                <Bracket rounds={main} onPlay={setPlaying} />
+                <Bracket rounds={bracketRounds} connectors={connectors} onPlay={setPlaying} />
                 {third && (
                   <section className="mt-8 hidden max-w-sm lg:ml-auto lg:block" aria-label={third.ronda}>
                     <h3 className="display mb-2 text-3xl">{third.ronda}</h3>
