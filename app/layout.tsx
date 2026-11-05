@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     description: "Vamo' a prender la plaza. Freestyle, barras y competencia real en RD.",
     url: "https://piladerap.vercel.app",
     siteName: "Pila de Ra'",
-    images: [{ url: "https://piladerap.vercel.app/api/og", width: 1200, height: 630, alt: "Pila de Ra'" }],
+    images: [{ url: "https://piladerap.vercel.app/api/og", width: 800, height: 420, alt: "Pila de Ra'" }],
     locale: "es_DO",
     type: "website",
   },

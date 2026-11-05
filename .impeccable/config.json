@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "${family}",
+        "createdAt": "2026-11-05T17:27:52.642Z",
+        "reason": "falso positivo: es la variable de la URL de Google Fonts en la ruta OG, no una tipografia aplicada (evidencia: linea 29 de app/api/og/route.tsx)"
+      }
+    ]
+  }
+}

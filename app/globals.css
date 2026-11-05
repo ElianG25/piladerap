@@ -95,7 +95,9 @@ input, textarea, select { font-size: 16px; }
 
 ::selection { background: var(--color-pila); color: var(--color-ink); }
 
-img, svg, video, canvas, iframe { max-width: 100%; }
+/* Ojo: una regla sin capa le gana a las utilidades de Tailwind (que viven en una capa),
+   así que aquí no va `img { max-width }` — el preflight de Tailwind ya lo trae. */
+canvas, iframe { max-width: 100%; }
 
 /* Barra de scroll de la pared */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
