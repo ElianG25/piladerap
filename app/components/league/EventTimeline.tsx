@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import { shareUrl } from "@/app/lib/share";
 import type { Battle, LeagueEvent, MediaItem } from "@/lib/domain/league/types";
 import { getEventPlaylistUrl } from "@/lib/domain/league/rules";
 import { getFinalBattle } from "@/lib/domain/league/rounds";
@@ -8,11 +9,11 @@ import { formatEventDate } from "@/lib/shared/format";
 import { getYouTubeId } from "@/lib/shared/youtube";
 import { YouTubeThumb } from "@/app/components/ui/YouTubeThumb";
 import { PilaMark } from "@/app/components/ui/PilaMark";
-import { ExternalIcon, PlayIcon } from "@/app/components/ui/icons";
+import { ExternalIcon, PlayIcon, ShareIcon } from "@/app/components/ui/icons";
 import { btnInk, btnOutline } from "@/app/components/ui/buttons";
-import { AddToCalendar, MapLink } from "./EventActions";
+import { AddToCalendar, CalendarFeedButton, MapLink } from "./EventActions";
 import { EventStatusBadge } from "./EventStatusBadge";
-import { VideoModal, type PlayPayload } from "./VideoModal";
+import { useOverlays } from "./OverlayProvider";
 
 /** Foto de la fecha: portada de su playlist; si falla, la foto de su final; si no hay, la pila. */
 function EventCover({ event, finalId, finalAlt }: { event: LeagueEvent; finalId: string | null; finalAlt: string }) {
@@ -32,14 +33,15 @@ type EventTimelineProps = { events: LeagueEvent[]; battles: Battle[]; media: Med
 
 /** Las fechas de la temporada, la más reciente primero, con la foto de su final. */
 export function EventTimeline({ events, battles, media }: EventTimelineProps) {
-  const [playing, setPlaying] = useState<PlayPayload>(null);
-  const closeVideo = useCallback(() => setPlaying(null), []);
+  const { openVideo } = useOverlays();
   const ordered = [...events].sort((a, b) => b.orden - a.orden);
 
   return (
     <section aria-labelledby="fechas-titulo">
-      <VideoModal video={playing} onClose={closeVideo} />
-      <h2 id="fechas-titulo" className="display text-5xl sm:text-6xl">Fechas</h2>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 id="fechas-titulo" className="display text-5xl sm:text-6xl">Fechas</h2>
+        <CalendarFeedButton />
+      </div>
 
       {ordered.length === 0 ? (
         <p className="mt-6 max-w-prose text-base text-muted">Todavía no hay fechas publicadas.</p>
@@ -73,7 +75,7 @@ export function EventTimeline({ events, battles, media }: EventTimelineProps) {
                   <div className="mt-auto flex flex-wrap gap-2 pt-1">
                     {finalId && final && (
                       <button type="button" className={btnInk}
-                        onClick={() => setPlaying({ id: finalId, title: `${final.mc1} vs ${final.mc2} · Final ${ev.titulo}`, url: final.youtubeUrl })}>
+                        onClick={() => openVideo({ id: finalId, title: `${final.mc1} vs ${final.mc2} · Final ${ev.titulo}`, url: final.youtubeUrl, battleId: final.battleId })}>
                         <PlayIcon className="h-4 w-4" />
                         Ver la final
                       </button>
@@ -83,6 +85,11 @@ export function EventTimeline({ events, battles, media }: EventTimelineProps) {
                         Playlist <ExternalIcon className="h-4 w-4" />
                       </a>
                     )}
+                    <button type="button" className={btnOutline}
+                      onClick={async () => { await shareUrl(`${ev.titulo} · Pila de Ra'`, `${window.location.origin}/fecha/${encodeURIComponent(ev.eventId)}`); }}>
+                      <ShareIcon className="h-4 w-4" />
+                      Compartir
+                    </button>
                     {upcoming && <AddToCalendar event={ev} />}
                     {upcoming && <MapLink place={ev.ubicacion} />}
                   </div>

@@ -14,6 +14,8 @@ export type ShareHighlights = {
   top3: { alias: string; puntos: string }[];
   /** Video de la final de la última fecha: de ahí sale la foto. */
   photoVideoId: string | null;
+  /** Si la tarjeta es de un MC, su alias (la ruta busca su foto). */
+  mcAlias?: string;
 };
 
 const UPCOMING = ["anunciada", "inscripciones", "en_vivo"];
@@ -30,13 +32,43 @@ const UPCOMING_LEAD: Record<string, string> = {
  * que viene. Puro: no hace fetch ni conoce `ImageResponse`/JSX, así que es
  * trivial de testear y de reusar si algún día se genera otro formato.
  */
-export function buildShareHighlights(league: LeaguePayload | null): ShareHighlights {
+export type ShareVariant = { mc?: string | null; view?: string | null; fecha?: string | null };
+
+export function buildShareHighlights(league: LeaguePayload | null, variant: ShareVariant = {}): ShareHighlights {
   const featured = league?.featuredEvent ?? null;
   const latest = league?.latestCompletedEvent ?? null;
   const top3 = league ? rankLeague(league.ranking, league.battles).slice(0, 3) : [];
   const final = league && latest ? getFinalBattle(league.battles, latest.eventId) : null;
   const photoVideoId = final ? getYouTubeId(final.youtubeUrl) : null;
   const top = top3.map((mc) => ({ alias: mc.alias, puntos: formatPoints(mc.puntosLiga) }));
+
+  // Tarjeta de un MC: ?mc=Reimy
+  const ranked = league ? rankLeague(league.ranking, league.battles) : [];
+  const mc = variant.mc ? ranked.find((r) => r.alias.trim().toLowerCase() === variant.mc!.trim().toLowerCase()) : null;
+  if (mc) {
+    return {
+      headline: mc.alias,
+      lead: mc.estado === "campeon" ? "Campeón de la última fecha" : `Posición ${mc.posicion} · ${formatPoints(mc.puntosLiga)} pts`,
+      detail: `${mc.victorias}V · ${mc.derrotas}D · ${mc.replicas}R`,
+      top3: top,
+      photoVideoId,
+      mcAlias: mc.alias,
+    };
+  }
+  // Tarjeta de una fecha: ?fecha=fecha-4
+  const target = variant.fecha ? league?.events.find((e) => e.eventId === variant.fecha) ?? null : null;
+  if (target) {
+    const targetFinal = league ? getFinalBattle(league.battles, target.eventId) : null;
+    const targetPhoto = targetFinal ? getYouTubeId(targetFinal.youtubeUrl) : null;
+    if (target.estado === "finalizada" && target.campeon)
+      return { headline: target.campeon, lead: `Campeón de la ${target.titulo}`, detail: target.subcampeon ? `Subcampeón ${target.subcampeon}` : "", top3: top, photoVideoId: targetPhoto };
+    const when = [target.fechaEvento ? formatEventDate(target.fechaEvento) : "", target.ubicacion].filter(Boolean).join("  ·  ");
+    return { headline: target.titulo, lead: UPCOMING_LEAD[target.estado] ?? "Fecha de la liga", detail: when, top3: top, photoVideoId: targetPhoto ?? photoVideoId };
+  }
+  // Tarjeta del ranking: ?view=ranking
+  if (variant.view === "ranking") {
+    return { headline: "Ranking", lead: "Así va la liga", detail: latest ? `Después de la ${latest.titulo}` : "", top3: top, photoVideoId };
+  }
 
   if (featured && UPCOMING.includes(featured.estado)) {
     const detail = [featured.fechaEvento ? formatEventDate(featured.fechaEvento) : "", featured.ubicacion]

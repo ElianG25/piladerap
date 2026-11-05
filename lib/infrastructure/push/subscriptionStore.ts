@@ -3,6 +3,7 @@ import type { PushSubscriptionData } from "@/lib/domain/notifications/types";
 import type { LeaguePayload } from "@/lib/domain/league/types";
 
 const SUBSCRIPTIONS_KEY = "push:subscriptions";
+const FOLLOWS_KEY = "push:follows";
 const SNAPSHOT_KEY = "push:last-league-snapshot";
 const REMINDED_PREFIX = "push:reminded:";
 const REMINDED_TTL_SECONDS = 60 * 60 * 24 * 2;
@@ -20,6 +21,30 @@ export async function saveSubscription(subscription: PushSubscriptionData): Prom
 
 export async function removeSubscription(endpoint: string): Promise<void> {
   await getRedis().hdel(SUBSCRIPTIONS_KEY, endpoint);
+  await getRedis().hdel(FOLLOWS_KEY, endpoint);
+}
+
+export async function hasSubscription(endpoint: string): Promise<boolean> {
+  return (await getRedis().hexists(SUBSCRIPTIONS_KEY, endpoint)) === 1;
+}
+
+/** MCs que sigue una suscripción (alias en minúsculas). Lista vacía = deja de seguir a todos. */
+export async function setFollows(endpoint: string, aliases: string[]): Promise<void> {
+  if (aliases.length === 0) await getRedis().hdel(FOLLOWS_KEY, endpoint);
+  else await getRedis().hset(FOLLOWS_KEY, { [endpoint]: aliases });
+}
+
+export async function getAllFollows(): Promise<Record<string, string[]>> {
+  const all = await getRedis().hgetall<Record<string, unknown>>(FOLLOWS_KEY);
+  const out: Record<string, string[]> = {};
+  for (const [endpoint, raw] of Object.entries(all ?? {})) {
+    let value = raw;
+    if (typeof value === "string") {
+      try { value = JSON.parse(value); } catch { continue; }
+    }
+    if (Array.isArray(value)) out[endpoint] = value.filter((v): v is string => typeof v === "string");
+  }
+  return out;
 }
 
 function isPushSubscriptionData(value: unknown): value is PushSubscriptionData {

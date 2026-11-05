@@ -2,6 +2,7 @@ import { hasPendingResults } from "@/lib/domain/league/rules";
 import { rankLeague } from "@/lib/domain/league/ranking";
 import type { Battle, LeagueEvent, LeaguePayload } from "@/lib/domain/league/types";
 import type { NotificationEvent } from "./types";
+import { buildFollowedMcEvents } from "./followedMcs";
 
 const LOW_CAPACITY_THRESHOLD = 5;
 
@@ -163,6 +164,8 @@ export function diffLeagueForNotifications(
   if (prevPending && !currPending) {
     events.push(buildResultsFinalizedEvent(current.latestCompletedEvent));
   }
+
+  events.push(...buildFollowedMcEvents(previous, current));
 
   return events;
 }

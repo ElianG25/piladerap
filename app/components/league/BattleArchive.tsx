@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Battle, LeagueEvent, MediaItem } from "@/lib/domain/league/types";
 import { getEventPlaylistUrl } from "@/lib/domain/league/rules";
 import { groupByRound, orderBracketRounds } from "@/lib/domain/league/rounds";
@@ -8,7 +8,8 @@ import { isReplica } from "@/lib/domain/league/scoring";
 import { getYouTubeId } from "@/lib/shared/youtube";
 import { ExternalIcon, PlayIcon } from "@/app/components/ui/icons";
 import { btnOutline } from "@/app/components/ui/buttons";
-import { VideoModal, type PlayPayload } from "./VideoModal";
+import type { PlayPayload } from "./VideoModal";
+import { useOverlays } from "./OverlayProvider";
 
 type BattleArchiveProps = {
   battles: Battle[];
@@ -48,7 +49,7 @@ function MatchCard({ battle, onPlay }: { battle: Battle; onPlay: (v: NonNullable
         </p>
       </div>
       {id ? (
-        <button type="button" onClick={() => onPlay({ id, title, url: battle.youtubeUrl })}
+        <button type="button" onClick={() => onPlay({ id, title, url: battle.youtubeUrl, battleId: battle.battleId })}
           aria-label={`Ver ${title}`}
           className="flex w-12 items-center justify-center border-l-2 border-ink bg-pila text-ink transition-colors hover:bg-ink hover:text-pila">
           <PlayIcon className="h-5 w-5" />
@@ -117,8 +118,7 @@ export function BattleArchive({ battles, events, media }: BattleArchiveProps) {
   }, [battles, events]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [playing, setPlaying] = useState<PlayPayload>(null);
-  const closeVideo = useCallback(() => setPlaying(null), []);
+  const { openVideo } = useOverlays();
 
   const current = eventsWithBattles.find((e) => e.eventId === selectedId) ?? eventsWithBattles[0] ?? null;
   const playlistUrl = current ? getEventPlaylistUrl(current, media) : null;
@@ -138,8 +138,6 @@ export function BattleArchive({ battles, events, media }: BattleArchiveProps) {
 
   return (
     <section aria-labelledby="batallas-titulo">
-      <VideoModal video={playing} onClose={closeVideo} />
-
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 id="batallas-titulo" className="display text-5xl sm:text-6xl">Batallas</h2>
         {playlistUrl && current && (
@@ -176,17 +174,17 @@ export function BattleArchive({ battles, events, media }: BattleArchiveProps) {
           <div className="mt-6">
             {isBracket ? (
               <>
-                <Bracket rounds={bracketRounds} connectors={connectors} onPlay={setPlaying} />
+                <Bracket rounds={bracketRounds} connectors={connectors} onPlay={openVideo} />
                 {third && (
                   <section className="mt-8 hidden max-w-sm lg:ml-auto lg:block" aria-label={third.ronda}>
                     <h3 className="display mb-2 text-3xl">{third.ronda}</h3>
-                    {third.battles.map((b) => <MatchCard key={b.battleId} battle={b} onPlay={setPlaying} />)}
+                    {third.battles.map((b) => <MatchCard key={b.battleId} battle={b} onPlay={openVideo} />)}
                   </section>
                 )}
-                <StackedRounds rounds={stacked} onPlay={setPlaying} className="lg:hidden" />
+                <StackedRounds rounds={stacked} onPlay={openVideo} className="lg:hidden" />
               </>
             ) : (
-              <StackedRounds rounds={stacked} onPlay={setPlaying} />
+              <StackedRounds rounds={stacked} onPlay={openVideo} />
             )}
           </div>
         </>

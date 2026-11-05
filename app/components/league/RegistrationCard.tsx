@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import type { LeagueEvent } from "@/lib/domain/league/types";
+import type { LeagueEvent, Registration } from "@/lib/domain/league/types";
 import { getErrorMessage } from "@/lib/domain/league/registrationErrors";
 import { formatEventDate } from "@/lib/shared/format";
 import { usePushSubscription } from "@/app/hooks/usePushSubscription";
@@ -11,6 +11,7 @@ import { btnInk, btnPila } from "@/app/components/ui/buttons";
 type RegistrationCardProps = {
   activeEvent: LeagueEvent | null;
   capacity: { total: number; restantes: number; max: number };
+  registrations: Registration[];
 };
 type FormState = { nombre: string; alias: string; telefono: string; instagram: string };
 const blank: FormState = { nombre: "", alias: "", telefono: "", instagram: "" };
@@ -45,13 +46,17 @@ function ClosedNotice() {
   );
 }
 
-export function RegistrationCard({ activeEvent, capacity }: RegistrationCardProps) {
+export function RegistrationCard({ activeEvent, capacity, registrations }: RegistrationCardProps) {
   const [form, setForm] = useState<FormState>(blank);
   const [hp, setHp] = useState(""); // honeypot anti-spam (debe quedar vacío)
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
   const isOpen = Boolean(activeEvent?.inscripcionesAbiertas);
+  const anotados = registrations
+    .filter((r) => r.eventId === activeEvent?.eventId && ["pendiente", "confirmado", "inscrito"].includes(r.estado))
+    .map((r) => r.alias)
+    .filter(Boolean);
   const pct = capacity.max > 0 ? Math.min(100, Math.round((capacity.total / capacity.max) * 100)) : 0;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -130,6 +135,18 @@ export function RegistrationCard({ activeEvent, capacity }: RegistrationCardProp
             </button>
           </form>
         </>
+      )}
+
+      {isOpen && anotados.length > 0 && (
+        <section aria-labelledby="anotados-titulo" className="mt-10 border-t-2 border-ink pt-5">
+          <h3 id="anotados-titulo" className="display text-3xl">Ya están anotados</h3>
+          <p className="mt-1 text-sm text-muted">Solo se muestran los nombres artísticos, nunca los datos de contacto.</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {anotados.map((a) => (
+              <li key={a} className="border-2 border-ink px-3 py-1.5 text-sm font-bold uppercase">{a}</li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <div role="status" aria-live="polite">

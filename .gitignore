@@ -57,3 +57,7 @@ next-env.d.ts
 .impeccable/mocks/
 .playwright-mcp/
 .impeccable/hook.cache.json
+
+# Fotos originales de los MCs (solo se suben las reducidas en public/mcs)
+/fotos-mcs/*
+!/fotos-mcs/LEEME.txt

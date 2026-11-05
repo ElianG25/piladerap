@@ -1,0 +1,13 @@
+FOTOS DE LOS MCs
+================
+
+1. Pon aquí la foto de cada MC con su nombre artístico:  reimy.jpg, ñaña free.jpg, d.i el lirico.png ...
+   (acentos, mayúsculas y espacios no importan; sirve jpg, png o webp).
+2. Corre en la terminal:   npm run fotos
+3. El script reduce cada foto a 480x480 (recorta centrando la cara), la guarda en public/mcs/ y
+   actualiza la lista que usa la web. Esas fotos reducidas son las que se suben a GitHub;
+   las originales de esta carpeta NO se suben.
+4. Haz commit de public/mcs y lib/generated/mcPhotos.ts.
+
+La foto solo se descarga cuando alguien abre la ficha de ese MC, y cada una pesa ~30-50 KB.
+Si el nombre del archivo no coincide con ningún MC del ranking, /revision-datos te lo avisa.

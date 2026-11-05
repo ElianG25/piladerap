@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import { getLeague } from "@/lib/application/league/getLeague";
 import { buildShareHighlights } from "@/lib/application/league/buildShareHighlights";
 import { youtubeThumbSources } from "@/lib/shared/youtube";
+import { mcSlug } from "@/lib/domain/league/mcPhoto";
+import { MC_PHOTO_SLUGS } from "@/lib/generated/mcPhotos";
 
 export const runtime = "edge";
 export const revalidate = 60;
@@ -88,14 +90,22 @@ function headlineSize(text: string): number {
 
 export async function GET(request: Request) {
   const origin = new URL(request.url).origin;
+  const params = new URL(request.url).searchParams;
   const league = await getLeague(60).catch(() => null);
-  const { headline, lead, detail, top3, photoVideoId } = buildShareHighlights(league);
+  const { headline, lead, detail, top3, photoVideoId, mcAlias } = buildShareHighlights(league, {
+    mc: params.get("mc")?.slice(0, 40),
+    view: params.get("view"),
+    fecha: params.get("fecha")?.slice(0, 60),
+  });
+  // Si el MC tiene foto propia, esa va primero; si no, la foto de la última final
+  const slug = mcAlias ? mcSlug(mcAlias) : null;
+  const mcPhotoUrl = slug && MC_PHOTO_SLUGS.includes(slug) ? `${origin}/mcs/${slug}.jpg` : null;
 
   const [anton, archivo, logo, photo] = await Promise.all([
     loadGoogleFont("Anton", 400),
     loadGoogleFont("Archivo", 700),
     loadImage([`${origin}/logo.png`]),
-    photoVideoId ? loadImage(youtubeThumbSources(photoVideoId)) : Promise.resolve(null),
+    loadImage([...(mcPhotoUrl ? [mcPhotoUrl] : []), ...(photoVideoId ? youtubeThumbSources(photoVideoId) : [])]),
   ]);
 
   const fonts: { name: string; data: ArrayBuffer; weight: 400 | 700; style: "normal" }[] = [];

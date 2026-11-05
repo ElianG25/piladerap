@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { syncFollowsToServer } from "@/app/lib/followsClient";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
@@ -99,6 +100,8 @@ export function usePushSubscription() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subscription.toJSON()),
       });
+      // Si ya seguía a algún MC antes de activar los avisos, se le cuenta al servidor ahora
+      void syncFollowsToServer();
 
       setIsSubscribed(true);
     } catch (err) {

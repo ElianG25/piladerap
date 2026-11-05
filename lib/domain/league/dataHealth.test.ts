@@ -101,4 +101,17 @@ describe("validateLeagueData", () => {
     expect(sev[0]).toBe("error");
     expect(sev[sev.length - 1]).toBe("info");
   });
+
+  it("revisa las fotos: archivos sin MC y MCs sin foto", () => {
+    const l = league({ ranking: [rk({ alias: "Ñaña Free" }), rk({ alias: "Reimy" })] });
+    const issues = validateLeagueData(l, { photoSlugs: ["nana-free", "reimi"] });
+    const sinMc = issues.find((i) => i.code === "FOTO_SIN_MC");
+    expect(sinMc?.hint).toContain("Reimy");
+    expect(issues.find((i) => i.code === "FOTOS_FALTAN")?.message).toContain("Reimy");
+  });
+
+  it("sin fotos en la carpeta no molesta con avisos de fotos", () => {
+    const l = league({ ranking: [rk({ alias: "Reimy" })] });
+    expect(validateLeagueData(l, { photoSlugs: [] }).map((i) => i.code)).not.toContain("FOTOS_FALTAN");
+  });
 });

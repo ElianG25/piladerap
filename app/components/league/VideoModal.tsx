@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, CloseIcon, ShareIcon } from "@/app/components/ui/icons";
 import { useModalLayer } from "@/app/hooks/useModalLayer";
 
-export type PlayPayload = { id: string; title: string; url: string } | null;
+export type PlayPayload = { id: string; title: string; url: string; battleId?: string } | null;
 
 type VideoModalProps = { video: PlayPayload; onClose: () => void };
 

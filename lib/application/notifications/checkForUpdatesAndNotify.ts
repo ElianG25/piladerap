@@ -1,9 +1,11 @@
 import { getLeague } from "@/lib/application/league/getLeague";
 import { diffLeagueForNotifications, buildDayOfReminder } from "@/lib/domain/notifications/diffLeague";
+import { selectForSubscription } from "@/lib/domain/notifications/audience";
 import { isEventToday } from "@/lib/domain/notifications/isEventToday";
 import type { NotificationEvent } from "@/lib/domain/notifications/types";
 import { sendPushToSubscription } from "@/lib/infrastructure/push/webPushClient";
 import {
+  getAllFollows,
   getAllSubscriptions,
   getLastSnapshot,
   hasBeenRemindedToday,
@@ -45,9 +47,12 @@ export async function checkForUpdatesAndNotify(now: Date = new Date()): Promise<
 
   if (notifications.length > 0) {
     const subscriptions = await getAllSubscriptions();
+    // Solo se consulta quién sigue a quién si hay avisos dirigidos a MCs concretos
+    const follows = notifications.some((n) => n.audience) ? await getAllFollows() : {};
 
     for (const subscription of subscriptions) {
-      for (const notification of notifications) {
+      const mine = selectForSubscription(notifications, follows[subscription.endpoint] ?? []);
+      for (const notification of mine) {
         const result = await sendPushToSubscription(subscription, notification);
         if (result.ok) {
           subscriptionsNotified++;

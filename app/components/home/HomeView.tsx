@@ -1,11 +1,14 @@
 "use client";
 
-import type { TouchEvent } from "react";
+import { useMemo, type TouchEvent } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import type { Battle, LeagueEvent, LeaguePayload, MediaItem, RankedItem } from "@/lib/domain/league/types";
 import type { Countdown } from "@/app/hooks/useEventCountdown";
 import type { Section } from "@/app/hooks/useSectionRouter";
 import { asHttpUrl } from "@/lib/shared/youtube";
+import { computeMovement } from "@/lib/domain/league/standings";
+import { OverlayProvider } from "@/app/components/league/OverlayProvider";
+import { SeasonExtras } from "@/app/components/league/SeasonExtras";
 import { LeagueHero } from "@/app/components/league/LeagueHero";
 import { EventTimeline } from "@/app/components/league/EventTimeline";
 import { Scoreboard } from "@/app/components/league/Scoreboard";
@@ -52,9 +55,14 @@ export function HomeView({
   const slogan = league.config?.brandSlogan || "Vamo' a prender la plaza";
   const instagramUrl = asHttpUrl(league.config?.instagramUrl);
   const videoId = league.config?.backgroundVideoId?.trim() || null;
+  const movement = useMemo(
+    () => computeMovement(ranking, battles, league.latestCompletedEvent?.eventId ?? null),
+    [ranking, battles, league.latestCompletedEvent?.eventId]
+  );
 
   return (
     <MotionConfig reducedMotion="user">
+      <OverlayProvider ranking={ranking} battles={battles} events={events} movement={movement}>
       <main className="min-h-[100svh] bg-concrete pb-[calc(5rem+env(safe-area-inset-bottom))] text-ink md:pb-0" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {refreshing && (
           <div role="status" className="fixed inset-x-0 top-0 z-[70] h-1 animate-pulse bg-pila motion-reduce:animate-none">
@@ -99,7 +107,7 @@ export function HomeView({
                   />
                   <NotificationBanner />
                   <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-                    {showRanking && <Scoreboard ranking={ranking} battles={battles} events={events} />}
+                    {showRanking && <Scoreboard ranking={ranking} movement={movement} />}
                     <LatestBattles battles={battles} latestEvent={league.latestCompletedEvent} onNavigate={onNavigate} />
                   </div>
                   <ScoringRules />
@@ -107,13 +115,16 @@ export function HomeView({
               )}
               {section === "ranking" && (
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,44rem)_1fr] lg:items-start">
-                  <Scoreboard ranking={ranking} battles={battles} events={events} limit={ranking.length} variant="full" />
-                  <ScoringRules narrow />
+                  <Scoreboard ranking={ranking} movement={movement} limit={ranking.length} variant="full" />
+                  <div className="space-y-8">
+                    <ScoringRules narrow />
+                    <SeasonExtras ranking={ranking} battles={battles} events={events} />
+                  </div>
                 </div>
               )}
               {section === "fechas" && <EventTimeline events={events} battles={battles} media={media} />}
               {section === "batallas" && <BattleArchive battles={battles} events={events} media={media} />}
-              {section === "inscripcion" && <RegistrationCard activeEvent={league.activeEvent} capacity={league.capacity} />}
+              {section === "inscripcion" && <RegistrationCard activeEvent={league.activeEvent} capacity={league.capacity} registrations={league.registrations} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -150,6 +161,7 @@ export function HomeView({
           </div>
         </nav>
       </main>
+      </OverlayProvider>
     </MotionConfig>
   );
 }

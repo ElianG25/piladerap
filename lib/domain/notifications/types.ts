@@ -7,6 +7,7 @@ export type NotificationKind =
   | "new_video"
   | "ranking_shuffle"
   | "results_finalized"
+  | "mc_result"
   | "event_reminder";
 
 export type NotificationEvent = {
@@ -15,6 +16,11 @@ export type NotificationEvent = {
   body: string;
   /** Ruta relativa a la que debe llevar un tap sobre la notificación. */
   url: string;
+  /**
+   * Si viene, el aviso solo es para quienes siguen a alguno de estos MCs
+   * (alias en minúsculas). Sin esto, le llega a todas las suscripciones.
+   */
+  audience?: { aliases: string[] };
 };
 
 export type PushSubscriptionData = {

@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { Battle, LeagueEvent } from "@/lib/domain/league/types";
 import type { Section } from "@/app/hooks/useSectionRouter";
 import { getYouTubeId } from "@/lib/shared/youtube";
 import { YouTubeThumb } from "@/app/components/ui/YouTubeThumb";
 import { ArrowRightIcon, PlayIcon } from "@/app/components/ui/icons";
 import { btnOutline } from "@/app/components/ui/buttons";
-import { VideoModal, type PlayPayload } from "./VideoModal";
+import { useOverlays } from "./OverlayProvider";
 
 type LatestBattlesProps = {
   battles: Battle[];
@@ -24,8 +24,7 @@ const priority = (ronda: string) => {
 
 /** Las batallas que más importan de la última fecha, con su foto y su video. */
 export function LatestBattles({ battles, latestEvent, onNavigate }: LatestBattlesProps) {
-  const [playing, setPlaying] = useState<PlayPayload>(null);
-  const closeVideo = useCallback(() => setPlaying(null), []);
+  const { openVideo } = useOverlays();
 
   const picks = useMemo(() => {
     if (!latestEvent) return [];
@@ -37,7 +36,6 @@ export function LatestBattles({ battles, latestEvent, onNavigate }: LatestBattle
 
   return (
     <section aria-labelledby="ultimas-titulo" className="flex flex-col">
-      <VideoModal video={playing} onClose={closeVideo} />
       <h2 id="ultimas-titulo" className="display text-4xl sm:text-5xl">Últimas batallas</h2>
       {latestEvent && <p className="mt-1 text-sm font-semibold text-muted">{latestEvent.titulo}</p>}
 
@@ -50,7 +48,7 @@ export function LatestBattles({ battles, latestEvent, onNavigate }: LatestBattle
             const title = `${b.mc1} vs ${b.mc2}`;
             return (
               <li key={b.battleId}>
-                <button type="button" onClick={() => setPlaying({ id, title: `${title} · ${b.ronda}`, url: b.youtubeUrl })}
+                <button type="button" onClick={() => openVideo({ id, title: `${title} · ${b.ronda}`, url: b.youtubeUrl, battleId: b.battleId })}
                   aria-label={`Ver ${title}, ${b.ronda}`}
                   className="group grid w-full grid-cols-[7.5rem_1fr] items-center gap-3 py-3 text-left sm:grid-cols-[9rem_1fr]">
                   <span className="relative block aspect-video overflow-hidden bg-ink">

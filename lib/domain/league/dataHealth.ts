@@ -4,6 +4,7 @@ import { getFinalBattle, groupByRound, orderBracketRounds } from "./rounds";
 import { hasNoStatsYet } from "./rules";
 import { asHttpUrl, getYouTubeId } from "@/lib/shared/youtube";
 import { parseEventDate } from "./eventTime";
+import { mcSlug } from "./mcPhoto";
 
 export type DataIssueSeverity = "error" | "warning" | "info";
 
@@ -37,7 +38,12 @@ const SEVERITY_ORDER: Record<DataIssueSeverity, number> = { error: 0, warning: 1
  * batallas, fechas repetidas, enlaces rotos... Pura: no lee nada, solo mira el
  * payload que ya validó el mapper. No cambia nada; solo informa.
  */
-export function validateLeagueData(league: LeaguePayload): DataIssue[] {
+export type ValidateOptions = {
+  /** Fotos de MCs que hay en /public/mcs (nombres sin extensión). Si no se pasa, no se revisan fotos. */
+  photoSlugs?: readonly string[];
+};
+
+export function validateLeagueData(league: LeaguePayload, options: ValidateOptions = {}): DataIssue[] {
   const issues: DataIssue[] = [];
   const add = (i: DataIssue) => issues.push(i);
 
@@ -246,6 +252,24 @@ export function validateLeagueData(league: LeaguePayload): DataIssue[] {
   const pending = league.ranking.filter(hasNoStatsYet);
   if (pending.length)
     add({ severity: "info", code: "MCS_SIN_STATS", where: "Ranking", message: `${pending.length} MC(s) sin estadísticas todavía: ${pending.map((p) => p.alias).slice(0, 8).join(", ")}.` });
+
+  // ── Fotos de MCs ──────────────────────────────────────────────────
+  if (options.photoSlugs) {
+    const aliasSlugs = new Map(league.ranking.map((r) => [mcSlug(r.alias), r.alias]));
+    for (const slug of options.photoSlugs) {
+      if (aliasSlugs.has(slug)) continue;
+      const close = [...aliasSlugs.keys()].filter((k) => distance(k, slug) <= 2).map((k) => aliasSlugs.get(k)!);
+      add({ severity: "warning", code: "FOTO_SIN_MC", where: `public/mcs · ${slug}.jpg`,
+        message: `La foto "${slug}" no coincide con ningún MC del Ranking.`,
+        hint: close.length ? `¿Será ${close.slice(0, 2).join(" o ")}? Renombra el archivo en fotos-mcs/ y corre npm run fotos.` : "Renombra el archivo con el nombre exacto del MC y corre npm run fotos." });
+    }
+    if (options.photoSlugs.length > 0) {
+      const sin = league.ranking.filter((r) => !options.photoSlugs!.includes(mcSlug(r.alias))).map((r) => r.alias);
+      if (sin.length)
+        add({ severity: "info", code: "FOTOS_FALTAN", where: "Fotos de MCs",
+          message: `${sin.length} de ${league.ranking.length} MCs todavía no tienen foto: ${sin.slice(0, 10).join(", ")}${sin.length > 10 ? "…" : ""}.` });
+    }
+  }
 
   // ── Media ─────────────────────────────────────────────────────────
   for (const m of league.media) {

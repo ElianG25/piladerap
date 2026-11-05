@@ -37,3 +37,17 @@ export function MapLink({ place, className = btnOutline }: { place: string; clas
     </a>
   );
 }
+
+/** Suscribe el calendario de la liga al teléfono: las fechas nuevas aparecen solas. */
+export function CalendarFeedButton({ className = btnOutline }: { className?: string }) {
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={() => { window.location.href = `webcal://${window.location.host}/calendario.ics`; }}
+    >
+      <CalendarIcon className="h-4 w-4" />
+      Seguir el calendario de la liga
+    </button>
+  );
+}

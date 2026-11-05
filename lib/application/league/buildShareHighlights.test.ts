@@ -47,4 +47,19 @@ describe("buildShareHighlights", () => {
     expect(h.detail).toContain("Plaza Revolución");
     expect(h.photoVideoId).toBe("zxc5royhRlQ");
   });
+
+  it("tarjeta de un MC", () => {
+    const f4 = ev({});
+    const h = buildShareHighlights(league({ featuredEvent: f4, latestCompletedEvent: f4, battles: [final], ranking: [rk("Reimy", 35), rk("Dinamita", 23)] }), { mc: "dinamita" });
+    expect(h.headline).toBe("Dinamita");
+    expect(h.lead).toBe("Posición 2 · 23 pts");
+    expect(h.mcAlias).toBe("Dinamita");
+  });
+
+  it("tarjeta del ranking", () => {
+    const f4 = ev({});
+    const h = buildShareHighlights(league({ featuredEvent: f4, latestCompletedEvent: f4, ranking: [rk("Reimy", 35)] }), { view: "ranking" });
+    expect(h.headline).toBe("Ranking");
+    expect(h.detail).toBe("Después de la Fecha 4");
+  });
 });

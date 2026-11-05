@@ -70,3 +70,8 @@ export const BracketIcon = (p: SVGProps<SVGSVGElement>) => (
 export const MicIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-3 0h6" /></Icon>
 );
+export const StarIcon = ({ filled, ...p }: SVGProps<SVGSVGElement> & { filled?: boolean }) => (
+  <Icon {...p} fill={filled ? "currentColor" : "none"}>
+    <path d="m12 3.5 2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5Z" />
+  </Icon>
+);

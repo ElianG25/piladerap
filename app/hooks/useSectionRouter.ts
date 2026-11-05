@@ -33,6 +33,7 @@ function getVisibleSections(config: Record<string, string> | undefined) {
 /** Lee la sección inicial desde la URL: ?s=ranking */
 function getInitialSection(): Section {
   if (typeof window === "undefined") return "inicio";
+  if (window.location.pathname.startsWith("/fecha/")) return "fechas";
   const s = new URLSearchParams(window.location.search).get("s");
   return (ALL_SECTION_IDS.includes(s as Section) ? s : "inicio") as Section;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLeague } from "@/lib/application/league/getLeague";
+import { MC_PHOTO_SLUGS } from "@/lib/generated/mcPhotos";
 import { validateLeagueData, type DataIssue, type DataIssueSeverity } from "@/lib/domain/league/dataHealth";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export default async function RevisionDatosPage({ searchParams }: { searchParams
   let issues: DataIssue[] = [];
   let loadError = "";
   try {
-    issues = validateLeagueData(await getLeague(0));
+    issues = validateLeagueData(await getLeague(0), { photoSlugs: MC_PHOTO_SLUGS });
   } catch (err) {
     loadError = err instanceof Error ? err.message : "No se pudo leer la hoja.";
   }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import type { Battle, LeaguePayload } from "@/lib/domain/league/types";
 import type { Countdown } from "@/app/hooks/useEventCountdown";
@@ -15,7 +14,7 @@ import { PlayIcon } from "@/app/components/ui/icons";
 import { btnInk, btnOutline } from "@/app/components/ui/buttons";
 import { AddToCalendar, MapLink } from "./EventActions";
 import { EventStatusBadge } from "./EventStatusBadge";
-import { VideoModal, type PlayPayload } from "./VideoModal";
+import { useOverlays } from "./OverlayProvider";
 
 type LeagueHeroProps = {
   league: LeaguePayload;
@@ -35,8 +34,7 @@ const UNITS: [keyof Countdown, string][] = [["d", "días"], ["h", "horas"], ["m"
  * importa en ese momento (cuenta regresiva, cupos, ver en vivo).
  */
 export function LeagueHero({ league, battles, timeLeft, videoId, slogan, counts, onNavigate }: LeagueHeroProps) {
-  const [playing, setPlaying] = useState<PlayPayload>(null);
-  const closeVideo = useCallback(() => setPlaying(null), []);
+  const { openVideo } = useOverlays();
 
   const featured = league.featuredEvent;
   const last = league.latestCompletedEvent;
@@ -70,7 +68,7 @@ export function LeagueHero({ league, battles, timeLeft, videoId, slogan, counts,
       <div className="relative min-h-60 bg-ink lg:min-h-[24rem]">
         {finalId ? (
           <button type="button" aria-label={"Ver la final: " + finalTitle}
-            onClick={() => setPlaying({ id: finalId, title: finalTitle, url: finalBattle!.youtubeUrl })}
+            onClick={() => openVideo({ id: finalId, title: finalTitle, url: finalBattle!.youtubeUrl, battleId: finalBattle!.battleId })}
             className="group absolute inset-0 block h-full w-full cursor-pointer">
             <YouTubeThumb id={finalId} alt={"Final de " + (photoSource?.titulo ?? "la fecha") + ": " + finalBattle?.mc1 + " vs " + finalBattle?.mc2}
               eager className="absolute inset-0 h-full w-full object-cover object-[50%_20%]" />
@@ -163,7 +161,7 @@ export function LeagueHero({ league, battles, timeLeft, videoId, slogan, counts,
           )}
           {mode === "result" && finalId && finalBattle && (
             <button type="button" className={btnInk}
-              onClick={() => setPlaying({ id: finalId, title: finalTitle, url: finalBattle.youtubeUrl })}>
+              onClick={() => openVideo({ id: finalId, title: finalTitle, url: finalBattle.youtubeUrl, battleId: finalBattle.battleId })}>
               <PlayIcon className="h-4 w-4" />
               Ver la final
             </button>
@@ -178,7 +176,6 @@ export function LeagueHero({ league, battles, timeLeft, videoId, slogan, counts,
         </p>
       </div>
 
-      <VideoModal video={playing} onClose={closeVideo} />
     </section>
   );
 }

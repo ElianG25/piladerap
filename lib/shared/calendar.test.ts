@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildEventIcs, mapsUrl } from "./calendar";
+import { buildCalendarIcs, buildEventIcs, mapsUrl } from "./calendar";
 import type { LeagueEvent } from "@/lib/domain/league/types";
 
 const ev = (p: Partial<LeagueEvent>): LeagueEvent => ({
@@ -23,5 +23,14 @@ describe("buildEventIcs", () => {
 describe("mapsUrl", () => {
   it("codifica el lugar", () => {
     expect(mapsUrl("Plaza X")).toContain("query=Plaza%20X%2C%20Santo%20Domingo");
+  });
+});
+
+describe("buildCalendarIcs", () => {
+  it("junta todas las fechas con día válido y descarta las ocultas o sin fecha", () => {
+    const ics = buildCalendarIcs([ev({ eventId: "f5" }), ev({ eventId: "f6", fechaEvento: "" }), ev({ eventId: "f7", estado: "oculta" })]);
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1);
+    expect(ics).toContain("UID:f5@piladerap.vercel.app");
+    expect(ics).toContain("X-WR-CALNAME");
   });
 });

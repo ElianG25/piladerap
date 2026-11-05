@@ -26,6 +26,11 @@ lib/
     scoring.ts                  Reglas de puntos: victoria directa 3 / con réplica 2 / derrota con réplica 1 / directa 0
     rounds.ts                   Orden de rondas (Octavos → Final), agrupar por ronda, encontrar la Final de una fecha
     profile.ts                  Batallas y récord de un MC (ficha de MC)
+    standings.ts                Puntos por fecha, movimiento en la tabla con la última fecha, historial de un MC
+    headToHead.ts               Rivales de un MC y cara a cara entre dos
+    records.ts                  Récords de la temporada y salón de campeones
+    mcPhoto.ts                  mcSlug(alias): nombre del archivo de la foto de un MC
+    dataHealth.ts               Validador: revisa que las hojas sean coherentes entre sí (/revision-datos)
     registrationErrors.ts       Códigos de error de inscripción ↔ status HTTP ↔ mensaje de usuario
                                  (única fuente — antes duplicado entre la API y el formulario)
     eventTime.ts                 Combina fechaEvento + horaEvento (12h/24h) en un Date real
@@ -34,6 +39,8 @@ lib/
     types.ts                    NotificationEvent, NotificationKind, PushSubscriptionData
     diffLeague.ts                Compara snapshot anterior vs actual → NotificationEvent[]
     isEventToday.ts               ¿"fechaEvento" es hoy? (para el recordatorio del día)
+    followedMcs.ts                Avisos por MC (ganó / cayó / campeón) para quienes lo siguen
+    audience.ts                   Qué avisos le tocan a cada suscripción (generales + los de sus MCs)
 
   application/league/         Casos de uso — orquestan dominio + infraestructura.
     getLeague.ts                 Trae y valida la liga completa (usado por /api/league y /api/og)
@@ -58,7 +65,7 @@ lib/
       honeypot.ts                  Detección de bots por campo oculto
     push/
       webPushClient.ts             Envía vía web-push (VAPID); distingue suscripción muerta vs error transitorio
-      subscriptionStore.ts          Redis (Upstash): suscripciones, snapshot de la liga, dedup del recordatorio diario
+      subscriptionStore.ts          Redis (Upstash): suscripciones, a qué MCs sigue cada una, snapshot de la liga, dedup del recordatorio diario
 
   shared/
     format.ts                    initials, formatPoints (medios puntos), formatEventDate
@@ -72,13 +79,18 @@ app/
     og/route.tsx                 Adaptador HTTP + JSX: llama a getLeague()/buildShareHighlights(),
                                  renderiza la imagen
     push/subscribe/route.ts      Alta (POST) / baja (DELETE) de una suscripción push
+    push/follow/route.ts         Guarda a qué MCs sigue una suscripción
     cron/check-updates/route.ts  Disparado por Vercel Cron ~6x/día (vercel.json); protegido con CRON_SECRET
+
+  # Además de /api: calendario.ics (calendario suscribible), pantalla (modo proyector), mc/[alias] y fecha/[id]
+  # (enlaces compartibles con su tarjeta), revision-datos (validador, solo con la llave del cron).
 
   hooks/                        Estado y efectos del lado del cliente (React puro, sin JSX de página).
     useLeagueData.ts             Fetch inicial + auto-refresh de la liga
     useSectionRouter.ts          Sección activa, secciones visibles según Config, URL, swipe
     useEventCountdown.ts         Cuenta regresiva hacia la fecha destacada
     useModalLayer.ts             Foco atrapado, Escape por capas y scroll bloqueado de los diálogos
+    useFollows.ts                MCs que sigue esta persona (guardados en el teléfono; se sincronizan con el servidor si hay avisos)
     useMediaQuery.ts             Suscripción genérica a media queries
     useParallaxScrollY.ts        Offset de scroll para el parallax del fondo
     usePushSubscription.ts       Soporte/permiso/suscripción push del navegador (detecta iOS sin instalar)
@@ -90,12 +102,13 @@ app/
     home/                        HomeView (barra superior + navegación + secciones), LoadingScreen, ErrorScreen, NavIcon
     league/                      LeagueHero (campeón + foto de la final / cuenta regresiva / en vivo), Scoreboard (ranking),
                                  McProfileSheet (ficha de MC), BattleArchive (llaves por fecha), EventTimeline, LatestBattles,
-                                 RegistrationCard, ScoringRules, VideoModal, HeroVideo (video de fondo solo en equipos capaces),
+                                 RegistrationCard, ScoringRules, SeasonExtras (récords + salón), OverlayProvider (ficha y video únicos,
+                                 enlaces ?mc= / ?batalla=), VideoModal, HeroVideo (video de fondo solo en equipos capaces),
                                  EventActions, EventStatusBadge
     notifications/
       NotificationBell.tsx         Campana en la barra (activar/desactivar; instrucciones en iOS sin instalar)
       NotificationBanner.tsx        Aviso cerrable de opt-in en la home
-    ui/                          icons (SVG propios), PilaMark (logo recortado), YouTubeThumb (portadas), buttons (clases)
+    ui/                          McPhoto (foto del MC o iniciales), icons (SVG propios), PilaMark (logo recortado), YouTubeThumb (portadas), buttons (clases)
     ServiceWorkerRegistration.tsx
 
 public/
@@ -194,3 +207,11 @@ Suscribirse: `usePushSubscription` (hook) → `pushManager.subscribe()` (navegad
 - **Las notificaciones son broadcast, no personalizadas** — todo suscrito recibe todo. Personalizar
   por alias de MC (p. ej. "te pasaron en el ranking") requeriría pedir el alias al suscribirse y
   cruzarlo contra `ranking.alias`, que hoy no se guarda por suscripción.
+
+## Fotos de MCs
+
+Las originales van en `fotos-mcs/` (no se suben a git). `npm run fotos` las reduce a 480×480 JPEG
+(~30–50 KB), las guarda en `public/mcs/<mcSlug>.jpg` y regenera `lib/generated/mcPhotos.ts` con la
+lista disponible. La web solo pide la foto cuando se abre la ficha de ese MC (carga diferida), y la
+sirve la CDN como archivo estático: no pasa por funciones del servidor. `/revision-datos` avisa de
+fotos cuyo nombre no coincide con ningún MC.
