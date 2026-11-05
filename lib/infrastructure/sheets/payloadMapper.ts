@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { LeagueEvent, LeaguePayload, RankingItem, Battle, Registration, MediaItem } from "@/lib/domain/league/types";
+import type { LeagueEvent, LeaguePayload, RankingItem, Battle, Registration, Participant, MediaItem } from "@/lib/domain/league/types";
 
 /* ── Coerciones seguras ──────────────────────────────────────────── */
 const str = z.preprocess((v) => (v == null ? "" : v), z.coerce.string()).catch("").default("");
@@ -81,15 +81,18 @@ const BattleSchema: z.ZodType<Battle> = z.object({
   notas: str,
 });
 
+/* Zod descarta las claves que no declaramos: nombre, teléfono e Instagram de las
+   inscripciones nunca pasan de aquí, así que no llegan al JSON público. */
 const RegistrationSchema: z.ZodType<Registration> = z.object({
-  createdAt: str,
   eventId: str,
-  nombre: str,
   alias: str,
-  telefono: str,
-  instagram: str,
   estado: str,
-  source: str,
+});
+
+const ParticipantSchema: z.ZodType<Participant> = z.object({
+  eventId: str,
+  alias: str,
+  estado: str,
 });
 
 const MediaSchema: z.ZodType<MediaItem> = z.object({
@@ -152,7 +155,7 @@ export function adaptPayload(raw: Record<string, unknown>): { ok: true; league: 
     activeEvent: pickEvent(config.activeEventId, rawLeague.activeEvent),
     latestCompletedEvent: pickEvent(config.latestCompletedEventId, rawLeague.latestCompletedEvent),
     registrations: parseArray(rawLeague.registrations, RegistrationSchema, "registrations"),
-    participants: Array.isArray(rawLeague.participants) ? rawLeague.participants : [],
+    participants: parseArray(rawLeague.participants, ParticipantSchema, "participants"),
     ranking: parseArray(rawLeague.ranking, RankingSchema, "ranking"),
     battles: parseArray(rawLeague.battles, BattleSchema, "battles"),
     media: parseArray(rawLeague.media, MediaSchema, "media"),

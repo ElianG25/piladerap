@@ -51,3 +51,26 @@ describe("adaptPayload — payload inválido o inesperado", () => {
     expect(league.battles).toEqual([]);
   });
 });
+
+describe("adaptPayload — privacidad", () => {
+  it("no deja pasar nombre, teléfono ni Instagram de las inscripciones", () => {
+    const raw = {
+      ok: true,
+      league: {
+        config: {},
+        events: [{ eventId: "f5", titulo: "Fecha 5", orden: 5 }],
+        registrations: [
+          { createdAt: "2026-11-02", eventId: "f5", nombre: "Persona Real", alias: "Zeta", telefono: "8095550000", instagram: "@zeta", estado: "confirmado", source: "web" },
+        ],
+        participants: [{ eventId: "f5", alias: "Zeta", nombre: "Persona Real", instagram: "@zeta", estado: "inscrito", notas: "x" }],
+      },
+    };
+    const { league } = adaptPayload(raw as Record<string, unknown>);
+    expect(league.registrations).toEqual([{ eventId: "f5", alias: "Zeta", estado: "confirmado" }]);
+    expect(league.participants).toEqual([{ eventId: "f5", alias: "Zeta", estado: "inscrito" }]);
+    const serializado = JSON.stringify(league);
+    expect(serializado).not.toContain("8095550000");
+    expect(serializado).not.toContain("Persona Real");
+    expect(serializado).not.toContain("@zeta");
+  });
+});

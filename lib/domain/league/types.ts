@@ -67,15 +67,21 @@ export type Battle = {
   notas: string;
 };
 
+/**
+ * Lo único de una inscripción que sale al público: quién está anotado, no sus
+ * datos de contacto. Nombre, teléfono e Instagram se quedan en la hoja.
+ */
 export type Registration = {
-  createdAt: string;
   eventId: string;
-  nombre: string;
   alias: string;
-  telefono: string;
-  instagram: string;
   estado: string;
-  source: string;
+};
+
+/** Participante de una fecha (solo lo público). */
+export type Participant = {
+  eventId: string;
+  alias: string;
+  estado: string;
 };
 
 export type MediaItem = {
@@ -94,7 +100,7 @@ export type LeaguePayload = {
   latestCompletedEvent: LeagueEvent | null;
   events: LeagueEvent[];
   registrations: Registration[];
-  participants: unknown[];
+  participants: Participant[];
   ranking: RankingItem[];
   battles: Battle[];
   media: MediaItem[];
