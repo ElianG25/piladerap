@@ -6,7 +6,6 @@ export function sortRanking(ranking: RankingItem[]) {
     if (b.victorias !== a.victorias) return b.victorias - a.victorias;
     if (b.replicas !== a.replicas) return b.replicas - a.replicas;
     if (a.derrotas !== b.derrotas) return a.derrotas - b.derrotas;
-    if (b.puntosBatalla !== a.puntosBatalla) return b.puntosBatalla - a.puntosBatalla;
     return a.alias.localeCompare(b.alias);
   });
 }
@@ -55,12 +54,11 @@ export function isSectionEnabled(config: Record<string, string> | undefined | nu
  * estadísticas (mientras se cargan los resultados completos de la fecha) —
  * en ese caso todos los campos numéricos llegan en 0 a la vez, a diferencia
  * de alguien que ya compitió (que va a tener al menos algún campo distinto
- * de 0: una victoria, una derrota, puntosBatalla...).
+ * de 0: una victoria, una derrota, una réplica...).
  */
 export function hasNoStatsYet(mc: RankingItem): boolean {
   return (
     mc.puntosLiga === 0 &&
-    mc.puntosBatalla === 0 &&
     mc.victorias === 0 &&
     mc.derrotas === 0 &&
     mc.replicas === 0

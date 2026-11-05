@@ -50,7 +50,6 @@ const EventSchema: z.ZodType<LeagueEvent> = z.object({
 const RankingSchema: z.ZodType<RankingItem> = z.object({
   alias: str,
   puntosLiga: num,
-  puntosBatalla: num,
   victorias: num,
   derrotas: num,
   replicas: num,

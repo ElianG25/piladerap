@@ -29,7 +29,6 @@ export type LeagueEvent = {
 export type RankingItem = {
   alias: string;
   puntosLiga: number;
-  puntosBatalla: number;
   victorias: number;
   derrotas: number;
   replicas: number;

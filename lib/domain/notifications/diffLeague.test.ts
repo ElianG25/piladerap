@@ -13,7 +13,7 @@ const mkBattle = (p: Partial<Battle>): Battle => ({
   cuentaParaLiga: false, puntosMc1: 0, puntosMc2: 0, notas: "", ...p,
 });
 const mkRank = (p: Partial<RankingItem>): RankingItem => ({
-  alias: "x", puntosLiga: 0, puntosBatalla: 0, victorias: 0, derrotas: 0,
+  alias: "x", puntosLiga: 0, victorias: 0, derrotas: 0,
   replicas: 0, bonus: 0, estado: "", ultimaFecha: "", movimiento: "", ...p,
 });
 const mkLeague = (p: Partial<LeaguePayload>): LeaguePayload => ({

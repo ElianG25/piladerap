@@ -219,19 +219,9 @@ function RankRow({ mc, index }: { mc: RankingItem; index: number }) {
       <span className="relative z-10 hidden sm:block shrink-0 w-24 text-right font-mono text-[10px] font-medium tabular-nums text-zinc-500">
         {mc.victorias}V · {mc.derrotas}D · {mc.replicas}R
       </span>
-      <div className="w-[4.5rem] shrink-0 flex flex-col items-end gap-0.5">
-        <div className="flex items-baseline gap-0.5">
-          <AnimatedNumber value={mc.puntosLiga} className="font-mono text-base font-extrabold tabular-nums text-white leading-none" />
-          <span className="text-[8px] font-display font-bold uppercase text-zinc-500 leading-none">lig</span>
-        </div>
-        {mc.puntosBatalla > 0 ? (
-          <div className="flex items-baseline gap-0.5">
-            <AnimatedNumber value={mc.puntosBatalla} className="font-mono text-[11px] font-bold tabular-nums text-zinc-400 leading-none" />
-            <span className="text-[8px] font-display font-bold uppercase text-zinc-600 leading-none">bat</span>
-          </div>
-        ) : (
-          <span className="text-[9px] text-zinc-700 leading-none">—</span>
-        )}
+      <div className="w-[4.5rem] shrink-0 flex items-baseline justify-end gap-0.5">
+        <AnimatedNumber value={mc.puntosLiga} className="font-mono text-base font-extrabold tabular-nums text-white leading-none" />
+        <span className="text-[8px] font-display font-bold uppercase text-zinc-500 leading-none">pts</span>
       </div>
     </motion.div>
   );

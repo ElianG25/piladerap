@@ -3,7 +3,7 @@ import { sortRanking, getPublicEvents, getPublishedBattles, getEventById, isSect
 import type { RankingItem, LeagueEvent, Battle, MediaItem } from "./types";
 
 const mkRank = (p: Partial<RankingItem>): RankingItem => ({
-  alias: "x", puntosLiga: 0, puntosBatalla: 0, victorias: 0, derrotas: 0,
+  alias: "x", puntosLiga: 0, victorias: 0, derrotas: 0,
   replicas: 0, bonus: 0, estado: "", ultimaFecha: "", movimiento: "", ...p,
 });
 const mkEvent = (p: Partial<LeagueEvent>): LeagueEvent => ({
@@ -111,7 +111,7 @@ describe("hasNoStatsYet", () => {
   });
   it("false si tiene al menos un campo distinto de 0", () => {
     expect(hasNoStatsYet(mkRank({ derrotas: 1 }))).toBe(false);
-    expect(hasNoStatsYet(mkRank({ puntosBatalla: 5.5 }))).toBe(false);
+    expect(hasNoStatsYet(mkRank({ replicas: 1 }))).toBe(false);
   });
 });
 
