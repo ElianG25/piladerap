@@ -2,12 +2,20 @@ FOTOS DE LOS MCs
 ================
 
 1. Pon aquí la foto de cada MC con su nombre artístico:  reimy.jpg, ñaña free.jpg, d.i el lirico.png ...
-   (acentos, mayúsculas y espacios no importan; sirve jpg, png o webp).
+   (acentos, mayúsculas y espacios no importan; sirve jpg, jpeg, png o webp, del tamaño que sea).
 2. Corre en la terminal:   npm run fotos
-3. El script reduce cada foto a 480x480 (recorta centrando la cara), la guarda en public/mcs/ y
-   actualiza la lista que usa la web. Esas fotos reducidas son las que se suben a GitHub;
-   las originales de esta carpeta NO se suben.
-4. Haz commit de public/mcs y lib/generated/mcPhotos.ts.
+3. El script reduce cada foto a 480x480, la guarda en public/mcs/ y actualiza la lista que usa la web.
+   - Fotos verticales: el recorte se alinea arriba (donde suele estar la cara).
+   - Fotos horizontales: se centra en lo que más resalta.
+   Las fotos reducidas (public/mcs) son las que se suben a GitHub; las originales de esta carpeta NO.
+4. Si en alguna foto la cara no queda bien centrada, dile al script dónde está en enfoque.json:
 
-La foto solo se descarga cuando alguien abre la ficha de ese MC, y cada una pesa ~30-50 KB.
+       { "stewart": { "x": 0.45, "y": 0.26, "zoom": 2 } }
+
+   x e y = posición de la cara en la foto (0 a 1, desde arriba a la izquierda).
+   zoom = qué tan cerca (1 = el cuadrado más grande posible, 2 = el doble de cerca).
+   Vuelve a correr npm run fotos.
+5. Haz commit de public/mcs, lib/generated/mcPhotos.ts y fotos-mcs/enfoque.json.
+
+La foto solo se descarga cuando alguien abre la ficha de ese MC, y cada una pesa ~20-40 KB.
 Si el nombre del archivo no coincide con ningún MC del ranking, /revision-datos te lo avisa.
