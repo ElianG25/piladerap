@@ -1,5 +1,5 @@
 import type { Battle, LeagueEvent, LeaguePayload } from "./types";
-import { isReplica } from "./scoring";
+import { isReplica, isThirdPlace, THIRD_PLACE_BONUS } from "./scoring";
 import { getFinalBattle, groupByRound, orderBracketRounds } from "./rounds";
 import { hasNoStatsYet } from "./rules";
 import { asHttpUrl, getYouTubeId } from "@/lib/shared/youtube";
@@ -216,11 +216,13 @@ export function validateLeagueData(league: LeaguePayload, options: ValidateOptio
       message: `Ranking marca campeón a ${champs[0].alias}, pero ${latest.titulo} dice que ganó ${latest.campeon}.` });
 
   // Puntos de la tabla contra lo que dan las batallas (solo fechas que tienen batallas)
-  const calc = new Map<string, { p: number; v: number; d: number; r: number }>();
-  const bump = (n: string) => calc.get(norm(n)) ?? calc.set(norm(n), { p: 0, v: 0, d: 0, r: 0 }).get(norm(n))!;
+  const calc = new Map<string, { p: number; v: number; d: number; r: number; t: number }>();
+  const bump = (n: string) => calc.get(norm(n)) ?? calc.set(norm(n), { p: 0, v: 0, d: 0, r: 0, t: 0 }).get(norm(n))!;
   for (const b of battles) {
     if (!b.ganador || !b.perdedor || norm(b.ganador) === norm(b.perdedor)) continue;
     const w = bump(b.ganador), l = bump(b.perdedor);
+    // Tercer puesto: +1 al ganador y nada más (no suma victoria, derrota ni réplica)
+    if (isThirdPlace(b.ronda)) { w.p += THIRD_PLACE_BONUS; w.t++; continue; }
     const rep = isReplica(b.tipoResultado);
     w.v++; l.d++;
     if (rep) { w.p += 2; l.p += 1; w.r++; l.r++; } else w.p += 3;
@@ -239,6 +241,11 @@ export function validateLeagueData(league: LeaguePayload, options: ValidateOptio
         message: `${r.alias}: Ranking dice ${r.puntosLiga} y las batallas dan ${c.p}.`,
         hint: "Deberían ser iguales: revisa cuál está mal." });
     }
+    // La columna bonus es el punto extra del tercer puesto: no puede ser menor que los terceros puestos ganados
+    if (r.bonus < c.t)
+      add({ severity: "warning", code: "BONUS_MENOR_QUE_TERCEROS", where,
+        message: `${r.alias} ganó ${c.t} tercer(os) puesto(s) en Batallas, pero bonus dice ${r.bonus}.`,
+        hint: "Pon en bonus la cantidad de terceros puestos ganados (cada uno suma 1 punto, ya incluido en puntosLiga)." });
     for (const [label, tabla, bat] of [["victorias", r.victorias, c.v], ["derrotas", r.derrotas, c.d], ["réplicas", r.replicas, c.r]] as const)
       if (tabla < bat)
         add({ severity: "error", code: "RECORD_MENOR_QUE_BATALLAS", where, message: `${r.alias} tiene ${tabla} ${label} en Ranking, pero sus batallas ya suman ${bat}.` });
@@ -249,7 +256,7 @@ export function validateLeagueData(league: LeaguePayload, options: ValidateOptio
       message: `${explainable.length} MCs tienen más puntos en Ranking que en sus batallas: ${explainable.join(", ")}.`,
       hint: `Es esperable: ${eventsWithoutBattles.map((e) => e.titulo).join(", ")} no tiene batallas cargadas. Solo es un problema si alguien no jugó esa fecha.` });
 
-  const pending = league.ranking.filter(hasNoStatsYet);
+  const pending = league.ranking.filter((r) => hasNoStatsYet(r, league.latestCompletedEvent?.eventId));
   if (pending.length)
     add({ severity: "info", code: "MCS_SIN_STATS", where: "Ranking", message: `${pending.length} MC(s) sin estadísticas todavía: ${pending.map((p) => p.alias).slice(0, 8).join(", ")}.` });
 

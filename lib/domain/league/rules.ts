@@ -54,8 +54,12 @@ export function isSectionEnabled(config: Record<string, string> | undefined | nu
  * en ese caso todos los campos numéricos llegan en 0 a la vez, a diferencia
  * de alguien que ya compitió (que va a tener al menos algún campo distinto
  * de 0: una victoria, una derrota, una réplica...).
+ *
+ * Si se conoce la última fecha, solo cuenta como "pendiente" quien estuvo en
+ * ella: un MC de una fecha vieja con todo en 0 es historia, no datos por cargar.
  */
-export function hasNoStatsYet(mc: RankingItem): boolean {
+export function hasNoStatsYet(mc: RankingItem, latestEventId?: string | null): boolean {
+  if (latestEventId && mc.ultimaFecha && mc.ultimaFecha !== latestEventId) return false;
   return (
     mc.puntosLiga === 0 &&
     mc.victorias === 0 &&
@@ -65,6 +69,6 @@ export function hasNoStatsYet(mc: RankingItem): boolean {
 }
 
 /** Hay al menos un MC sin stats cargadas — el ranking completo es provisional. */
-export function hasPendingResults(ranking: RankingItem[]): boolean {
-  return ranking.some(hasNoStatsYet);
+export function hasPendingResults(ranking: RankingItem[], latestEventId?: string | null): boolean {
+  return ranking.some((mc) => hasNoStatsYet(mc, latestEventId));
 }

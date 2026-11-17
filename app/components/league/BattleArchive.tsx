@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { Battle, LeagueEvent, MediaItem } from "@/lib/domain/league/types";
 import { getEventPlaylistUrl } from "@/lib/domain/league/rules";
 import { groupByRound, orderBracketRounds } from "@/lib/domain/league/rounds";
-import { isReplica } from "@/lib/domain/league/scoring";
+import { isReplica, isThirdPlace, THIRD_PLACE_BONUS } from "@/lib/domain/league/scoring";
 import { getYouTubeId } from "@/lib/shared/youtube";
 import { ExternalIcon, PlayIcon } from "@/app/components/ui/icons";
 import { btnOutline } from "@/app/components/ui/buttons";
@@ -45,7 +45,7 @@ function MatchCard({ battle, onPlay }: { battle: Battle; onPlay: (v: NonNullable
           );
         })}
         <p className="border-t-2 border-ink px-3 py-1.5 text-sm font-semibold text-muted">
-          {battle.ganador ? (replica ? "Ganó con réplica" : "Ganó directo") : "Sin resultado"}
+          {battle.ganador ? (isThirdPlace(battle.ronda) ? `Ganó el tercer puesto · +${THIRD_PLACE_BONUS} punto` : replica ? "Ganó con réplica" : "Ganó directo") : "Sin resultado"}
         </p>
       </div>
       {id ? (

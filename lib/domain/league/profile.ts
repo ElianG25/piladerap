@@ -1,5 +1,5 @@
 import type { Battle } from "./types";
-import { battlePoints, isReplica } from "./scoring";
+import { battlePoints, isReplica, isThirdPlace } from "./scoring";
 import { roundRank } from "./rounds";
 
 const norm = (s: string) => s.trim().toLowerCase();
@@ -10,6 +10,8 @@ export type McBattleResult = {
   won: boolean;
   replica: boolean;
   puntos: number;
+  /** Batalla por el tercer puesto: da 1 punto extra al ganador y no cuenta como victoria ni derrota. */
+  tercerPuesto: boolean;
 };
 
 /** Batallas de un MC (1 vs 1 con ganador definido), de la fecha más reciente a la más vieja. */
@@ -26,7 +28,8 @@ export function getMcBattles(battles: Battle[], alias: string): McBattleResult[]
       rival: won ? battle.perdedor : battle.ganador,
       won,
       replica: isReplica(battle.tipoResultado),
-      puntos: battlePoints(battle.tipoResultado, won),
+      puntos: battlePoints(battle.tipoResultado, won, battle.ronda),
+      tercerPuesto: isThirdPlace(battle.ronda),
     });
   }
   return out.sort((a, b) => {
@@ -37,11 +40,12 @@ export function getMcBattles(battles: Battle[], alias: string): McBattleResult[]
 
 export function summarizeMcBattles(results: McBattleResult[]) {
   return results.reduce(
+    // El tercer puesto suma su punto extra, pero no entra en victorias, derrotas ni réplicas
     (acc, r) => ({
       puntos: acc.puntos + r.puntos,
-      victorias: acc.victorias + (r.won ? 1 : 0),
-      derrotas: acc.derrotas + (r.won ? 0 : 1),
-      replicas: acc.replicas + (r.replica ? 1 : 0),
+      victorias: acc.victorias + (!r.tercerPuesto && r.won ? 1 : 0),
+      derrotas: acc.derrotas + (!r.tercerPuesto && !r.won ? 1 : 0),
+      replicas: acc.replicas + (!r.tercerPuesto && r.replica ? 1 : 0),
     }),
     { puntos: 0, victorias: 0, derrotas: 0, replicas: 0 }
   );

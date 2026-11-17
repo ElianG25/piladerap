@@ -114,4 +114,32 @@ describe("validateLeagueData", () => {
     const l = league({ ranking: [rk({ alias: "Reimy" })] });
     expect(validateLeagueData(l, { photoSlugs: [] }).map((i) => i.code)).not.toContain("FOTOS_FALTAN");
   });
+
+  it("el tercer puesto da 1 punto y no cuenta como victoria ni derrota al comparar con Ranking", () => {
+    const l = league({
+      events: [ev({ eventId: "f1" })],
+      ranking: [rk({ alias: "Ana", puntosLiga: 1, victorias: 0, derrotas: 0, bonus: 1 }), rk({ alias: "Beto", puntosLiga: 0, victorias: 0, derrotas: 0 })],
+      battles: [bt({ ronda: "Tercer Puesto" })],
+    });
+    expect(codes(l)).not.toContain("PUNTOS_MENORES_QUE_BATALLAS");
+    expect(codes(l)).not.toContain("RECORD_MENOR_QUE_BATALLAS");
+    expect(codes(l)).not.toContain("BONUS_MENOR_QUE_TERCEROS");
+  });
+
+  it("avisa si bonus es menor que los terceros puestos ganados", () => {
+    const l = league({
+      ranking: [rk({ alias: "Ana", puntosLiga: 1, bonus: 0 }), rk({ alias: "Beto" })],
+      battles: [bt({ ronda: "Tercer Puesto" })],
+    });
+    expect(codes(l)).toContain("BONUS_MENOR_QUE_TERCEROS");
+  });
+
+  it("un MC de una fecha vieja con todo en cero no cuenta como pendiente", () => {
+    const old = rk({ alias: "Vieja", puntosLiga: 0, victorias: 0, derrotas: 0, ultimaFecha: "f1" });
+    const nueva = rk({ alias: "Nueva", puntosLiga: 0, victorias: 0, derrotas: 0, ultimaFecha: "f5" });
+    const latest = ev({ eventId: "f5", titulo: "Fecha 5", numero: 5, orden: 5 });
+    const issue = validateLeagueData(league({ ranking: [old, nueva], latestCompletedEvent: latest, events: [latest] })).find((i) => i.code === "MCS_SIN_STATS");
+    expect(issue?.message).toContain("Nueva");
+    expect(issue?.message).not.toContain("Vieja");
+  });
 });

@@ -152,8 +152,8 @@ export function diffLeagueForNotifications(
     }
   }
 
-  const prevPending = hasPendingResults(previous.ranking);
-  const currPending = hasPendingResults(current.ranking);
+  const prevPending = hasPendingResults(previous.ranking, previous.latestCompletedEvent?.eventId);
+  const currPending = hasPendingResults(current.ranking, current.latestCompletedEvent?.eventId);
 
   const prevTop3 = rankLeague(previous.ranking, previous.battles).slice(0, 3).map((r) => r.alias);
   const currTop3 = rankLeague(current.ranking, current.battles).slice(0, 3).map((r) => r.alias);

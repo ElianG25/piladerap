@@ -3,6 +3,8 @@ import { computeMovement, eventPoints, mcHistory } from "./standings";
 import { getHeadToHead, getRivals } from "./headToHead";
 import { getChampionsHall, getSeasonRecords } from "./records";
 import { mcSlug } from "./mcPhoto";
+import { battlePoints } from "./scoring";
+import { getMcBattles, summarizeMcBattles } from "./profile";
 import type { Battle, LeagueEvent, RankingItem } from "./types";
 
 const rk = (alias: string, puntosLiga: number, victorias = 0, derrotas = 0, replicas = 0): RankingItem => ({
@@ -92,5 +94,40 @@ describe("mcSlug", () => {
     expect(mcSlug("Ñaña Free")).toBe("nana-free");
     expect(mcSlug("D.I El Lirico")).toBe("d-i-el-lirico");
     expect(mcSlug("SEVENZ 8")).toBe("sevenz-8");
+  });
+});
+
+describe("tercer puesto", () => {
+  it("da 1 punto al ganador y 0 al otro, sea directa o réplica", () => {
+    expect(battlePoints("directa", true, "Tercer Puesto")).toBe(1);
+    expect(battlePoints("directa", false, "Tercer Puesto")).toBe(0);
+    expect(battlePoints("replica", true, "tercer puesto")).toBe(1);
+    expect(battlePoints("replica", false, "Tercer Puesto")).toBe(0);
+    expect(battlePoints("directa", true, "Final")).toBe(3);
+  });
+
+  const battles = [bt("f4", "Semifinal", "Ana", "Beto"), bt("f4", "Tercer Puesto", "Beto", "Cris")];
+
+  it("suma el punto extra en los puntos de la fecha", () => {
+    const p = eventPoints(battles, "f4");
+    expect(p.get("beto")).toBe(1);
+    expect(p.get("cris")).toBe(0);
+  });
+
+  it("no cuenta como victoria ni derrota en el récord, pero sí suma el punto", () => {
+    const results = getMcBattles(battles, "Beto");
+    expect(summarizeMcBattles(results)).toEqual({ puntos: 1, victorias: 0, derrotas: 1, replicas: 0 });
+    expect(results.find((r) => r.tercerPuesto)?.puntos).toBe(1);
+  });
+
+  it("el historial por fecha tampoco lo cuenta como victoria o derrota", () => {
+    const h = mcHistory(battles, [ev("f4", 4)], "Beto");
+    expect(h[0]).toMatchObject({ puntos: 1, victorias: 0, derrotas: 1 });
+  });
+
+  it("no alarga la racha de victorias", () => {
+    const seq = [bt("f4", "Octavos", "Ana", "X"), bt("f4", "Cuartos", "Ana", "Y"), bt("f4", "Semifinal", "Z", "Ana"), bt("f4", "Tercer Puesto", "Ana", "W")];
+    const rec = getSeasonRecords([rk("Ana", 8, 2, 1)], seq, [ev("f4", 4)]);
+    expect(rec.find((r) => r.id === "racha")).toBeUndefined(); // 2 seguidas: no llega al mínimo de 3
   });
 });

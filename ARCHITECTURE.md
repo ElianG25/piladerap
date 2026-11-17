@@ -23,7 +23,8 @@ lib/
     types.ts                    Entidades: LeagueEvent, RankingItem, Battle, LeaguePayload...
     rules.ts                    getPublicEvents, getPublishedBattles, getEventPlaylistUrl, isSectionEnabled, hasPendingResults
     ranking.ts                  rankLeague: orden por puntos de liga + desempate por cruce directo (empate = posición compartida)
-    scoring.ts                  Reglas de puntos: victoria directa 3 / con réplica 2 / derrota con réplica 1 / directa 0
+    scoring.ts                  Reglas de puntos: victoria directa 3 / con réplica 2 / derrota con réplica 1 / directa 0;
+                                 tercer puesto: +1 al ganador y no cuenta en el récord
     rounds.ts                   Orden de rondas (Octavos → Final), agrupar por ronda, encontrar la Final de una fecha
     profile.ts                  Batallas y récord de un MC (ficha de MC)
     standings.ts                Puntos por fecha, movimiento en la tabla con la última fecha, historial de un MC

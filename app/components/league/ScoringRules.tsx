@@ -1,4 +1,4 @@
-import { SCORING_RULES } from "@/lib/domain/league/scoring";
+import { SCORING_RULES, THIRD_PLACE_BONUS } from "@/lib/domain/league/scoring";
 
 /** Las reglas de puntos a la vista: quien mira la tabla entiende por qué alguien va primero. */
 export function ScoringRules({ compact = false, narrow = false }: { compact?: boolean; narrow?: boolean }) {
@@ -14,6 +14,10 @@ export function ScoringRules({ compact = false, narrow = false }: { compact?: bo
         ))}
       </dl>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-muted">
+        <strong className="font-bold text-ink">Tercer puesto:</strong> no da esos puntos; quien lo gana suma{" "}
+        <span className="num font-bold text-ink">{THIRD_PLACE_BONUS}</span> punto extra, y no cuenta como victoria ni derrota.
+      </p>
+      <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted">
         Si dos MCs terminan con los mismos puntos, gana quien le ganó al otro en una batalla directa.
         Si nunca se cruzaron, el empate se mantiene y comparten posición.
       </p>

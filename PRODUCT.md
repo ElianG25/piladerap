@@ -22,9 +22,9 @@ Una liga con reglas claras (puntos por victoria directa/réplica, desempate por 
 
 - Las fechas se juegan en plazas (Plaza Revolución Héroes de Abril – UASD, cerca de la estación Casandra Damirón). Las fotos y videos muestran tarde y noche al aire libre.
 - Eliminación directa por fecha: Octavos, Cuartos, Semifinal, Tercer puesto, Final. Una batalla puede definirse directa o con réplica.
-- Puntos de liga: victoria directa 3, victoria con réplica 2, derrota con réplica 1, derrota directa 0. Se quitaron los puntos de jurado (`puntosBatalla`) porque cada jurado puntúa con criterio distinto.
+- Puntos de liga: victoria directa 3, victoria con réplica 2, derrota con réplica 1, derrota directa 0. La batalla por el tercer puesto no da esos puntos: el que gana suma 1 punto extra (columna `bonus`, ya incluido en `puntosLiga`) y esa batalla no cuenta como victoria, derrota ni réplica en el récord. Se quitaron los puntos de jurado (`puntosBatalla`) porque cada jurado puntúa con criterio distinto.
 - Desempate: cruce directo entre los empatados; si no existe, el empate se mantiene.
-- Backend: Google Sheets (Config, Eventos, Ranking, Batallas, Participantes, Inscripciones, Media) vía Google Apps Script. El Excel/Sheet se digita a mano. La Fecha 1 no tiene batallas respaldadas (se perdieron); sus puntos en `Ranking` están revisados a mano y son la verdad.
+- Backend: Google Sheets (Config, Eventos, Ranking, Batallas, Participantes, Inscripciones, Media) vía Google Apps Script. El Excel/Sheet se digita a mano. La Fecha 1 no tiene batallas respaldadas: los videos de ese día se perdieron, y sus puntos y récords en `Ranking` se cargaron y corrigieron a mano con los registros de los jurados. No hay forma de verificarlos contra videos, así que `Ranking` es la verdad para esa fecha (la web no los contrasta con `Batallas`).
 
 ## Capabilities and Constraints
 

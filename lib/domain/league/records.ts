@@ -1,5 +1,6 @@
 import type { Battle, LeagueEvent, RankingItem } from "./types";
 import { chronological, eventPoints } from "./standings";
+import { isThirdPlace } from "./scoring";
 
 const norm = (s: string) => s.trim().toLowerCase();
 
@@ -36,7 +37,7 @@ export function getSeasonRecords(ranking: RankingItem[], battles: Battle[], even
   const best = new Map<string, number>();
   const names = new Map<string, string>();
   for (const b of chronological(battles, events)) {
-    if (!b.ganador || !b.perdedor) continue;
+    if (!b.ganador || !b.perdedor || isThirdPlace(b.ronda)) continue; // el tercer puesto no cuenta como victoria
     const w = norm(b.ganador);
     const l = norm(b.perdedor);
     names.set(w, b.ganador);

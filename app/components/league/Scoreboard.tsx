@@ -14,6 +14,8 @@ type ScoreboardProps = {
   ranking: RankedItem[];
   /** Cuánto se movió cada MC con la última fecha (clave: alias en minúsculas). */
   movement: Map<string, Movement>;
+  /** Última fecha finalizada: solo quien estuvo en ella puede estar "pendiente". */
+  latestEventId?: string | null;
   /** Cuántas filas se ven antes de "Ver todos" (solo variante compacta). */
   limit?: number;
   variant?: "compact" | "full";
@@ -41,7 +43,7 @@ function MovementMark({ delta }: { delta: number | null }) {
   );
 }
 
-function Row({ mc, move, following, onOpen }: { mc: RankedItem; move?: Movement; following: boolean; onOpen: (alias: string) => void }) {
+function Row({ mc, move, following, pending, onOpen }: { mc: RankedItem; move?: Movement; following: boolean; pending: boolean; onOpen: (alias: string) => void }) {
   const leader = mc.posicion === 1;
   return (
     <li>
@@ -58,7 +60,7 @@ function Row({ mc, move, following, onOpen }: { mc: RankedItem; move?: Movement;
             {following && <StarIcon filled className="h-4 w-4 shrink-0 text-pila" aria-label="Lo sigues" role="img" />}
             {mc.estado === "campeon" && <Chip tone="pila">Campeón</Chip>}
             {mc.empatado && <Chip tone="line">Empate</Chip>}
-            {hasNoStatsYet(mc) && <Chip tone="line">Pendiente</Chip>}
+            {pending && <Chip tone="line">Pendiente</Chip>}
             {move?.debut ? <Chip tone="line">Debut</Chip> : <MovementMark delta={move?.delta ?? null} />}
           </span>
           <span className="num mt-0.5 block text-xs text-muted-ink sm:hidden">
@@ -78,7 +80,7 @@ function Row({ mc, move, following, onOpen }: { mc: RankedItem; move?: Movement;
 }
 
 /** El marcador oficial: tabla de la liga con ficha de cada MC. */
-export function Scoreboard({ ranking, movement, limit = 5, variant = "compact" }: ScoreboardProps) {
+export function Scoreboard({ ranking, movement, latestEventId = null, limit = 5, variant = "compact" }: ScoreboardProps) {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
   const { openMc } = useOverlays();
@@ -92,7 +94,7 @@ export function Scoreboard({ ranking, movement, limit = 5, variant = "compact" }
   );
   const rows = isFull ? filtered : expanded ? ranking : ranking.slice(0, limit);
   const canExpand = !isFull && ranking.length > limit;
-  const provisional = ranking.length > 0 && hasPendingResults(ranking);
+  const provisional = ranking.length > 0 && hasPendingResults(ranking, latestEventId);
   const tiesVisible = rows.some((r) => r.empatado);
 
   return (
@@ -146,7 +148,7 @@ export function Scoreboard({ ranking, movement, limit = 5, variant = "compact" }
             <span>#</span><span>MC</span><span className="hidden text-right sm:block">Récord</span><span className="text-right">Pts</span>
           </div>
           <ul className="divide-y divide-ink-line">
-            {rows.map((mc) => <Row key={mc.alias} mc={mc} move={movement.get(mc.alias.trim().toLowerCase())} following={isFollowing(mc.alias)} onOpen={openMc} />)}
+            {rows.map((mc) => <Row key={mc.alias} mc={mc} move={movement.get(mc.alias.trim().toLowerCase())} following={isFollowing(mc.alias)} pending={hasNoStatsYet(mc, latestEventId)} onOpen={openMc} />)}
           </ul>
         </>
       )}

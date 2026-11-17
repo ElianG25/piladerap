@@ -1,6 +1,6 @@
 import type { Battle, LeagueEvent, RankingItem } from "./types";
 import { rankLeague } from "./ranking";
-import { battlePoints } from "./scoring";
+import { battlePoints, isThirdPlace } from "./scoring";
 import { roundRank } from "./rounds";
 
 const norm = (s: string) => s.trim().toLowerCase();
@@ -13,8 +13,8 @@ export function eventPoints(battles: Battle[], eventId: string): Map<string, num
     if (norm(b.ganador) === norm(b.perdedor)) continue;
     const w = norm(b.ganador);
     const l = norm(b.perdedor);
-    out.set(w, (out.get(w) ?? 0) + battlePoints(b.tipoResultado, true));
-    out.set(l, (out.get(l) ?? 0) + battlePoints(b.tipoResultado, false));
+    out.set(w, (out.get(w) ?? 0) + battlePoints(b.tipoResultado, true, b.ronda));
+    out.set(l, (out.get(l) ?? 0) + battlePoints(b.tipoResultado, false, b.ronda));
   }
   return out;
 }
@@ -84,12 +84,14 @@ export function mcHistory(battles: Battle[], events: LeagueEvent[], alias: strin
           b.perdedor &&
           [b.ganador, b.perdedor].some((n) => norm(n) === me)
       );
-      const wins = mine.filter((b) => norm(b.ganador) === me).length;
+      // El tercer puesto suma su punto extra pero no cuenta como victoria ni derrota
+      const counted = mine.filter((b) => !isThirdPlace(b.ronda));
+      const wins = counted.filter((b) => norm(b.ganador) === me).length;
       return {
         event: e,
         puntos: eventPoints(battles, e.eventId).get(me) ?? 0,
         victorias: wins,
-        derrotas: mine.length - wins,
+        derrotas: counted.length - wins,
         jugo: mine.length > 0,
       };
     })

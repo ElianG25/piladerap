@@ -107,7 +107,7 @@ export function HomeView({
                   />
                   <NotificationBanner />
                   <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-                    {showRanking && <Scoreboard ranking={ranking} movement={movement} />}
+                    {showRanking && <Scoreboard ranking={ranking} movement={movement} latestEventId={league.latestCompletedEvent?.eventId ?? null} />}
                     <LatestBattles battles={battles} latestEvent={league.latestCompletedEvent} onNavigate={onNavigate} />
                   </div>
                   <ScoringRules />
@@ -115,7 +115,7 @@ export function HomeView({
               )}
               {section === "ranking" && (
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,44rem)_1fr] lg:items-start">
-                  <Scoreboard ranking={ranking} movement={movement} limit={ranking.length} variant="full" />
+                  <Scoreboard ranking={ranking} movement={movement} latestEventId={league.latestCompletedEvent?.eventId ?? null} limit={ranking.length} variant="full" />
                   <div className="space-y-8">
                     <ScoringRules narrow />
                     <SeasonExtras ranking={ranking} battles={battles} events={events} />

@@ -113,6 +113,15 @@ describe("hasNoStatsYet", () => {
   });
 });
 
+describe("hasNoStatsYet según la última fecha", () => {
+  it("solo es pendiente quien estuvo en la última fecha", () => {
+    expect(hasNoStatsYet(mkRank({ ultimaFecha: "f5" }), "f5")).toBe(true);
+    expect(hasNoStatsYet(mkRank({ ultimaFecha: "f1" }), "f5")).toBe(false);
+    expect(hasNoStatsYet(mkRank({ ultimaFecha: "" }), "f5")).toBe(true);
+    expect(hasNoStatsYet(mkRank({ ultimaFecha: "f1" }))).toBe(true);
+  });
+});
+
 describe("hasPendingResults", () => {
   it("true si al menos un MC no tiene stats cargadas", () => {
     expect(hasPendingResults([mkRank({ alias: "A", puntosLiga: 10 }), mkRank({ alias: "B" })])).toBe(true);
