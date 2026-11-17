@@ -47,6 +47,9 @@ function MatchCard({ battle, onPlay }: { battle: Battle; onPlay: (v: NonNullable
         <p className="border-t-2 border-ink px-3 py-1.5 text-sm font-semibold text-muted">
           {battle.ganador ? (isThirdPlace(battle.ronda) ? `Ganó el tercer puesto · +${THIRD_PLACE_BONUS} punto` : replica ? "Ganó con réplica" : "Ganó directo") : "Sin resultado"}
         </p>
+        {battle.videoCompartido && (
+          <p className="border-t-2 border-ink px-3 py-1.5 text-xs font-semibold text-muted">Se juega en el video de la Final</p>
+        )}
       </div>
       {id ? (
         <button type="button" onClick={() => onPlay({ id, title, url: battle.youtubeUrl, battleId: battle.battleId })}

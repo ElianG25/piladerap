@@ -1,4 +1,5 @@
 import type { Battle } from "./types";
+import { isThirdPlace } from "./scoring";
 
 const ORDER = ["octavos", "cuartos", "semifinal", "final", "tercer puesto"];
 
@@ -27,6 +28,19 @@ export function getFinalBattle(battles: Battle[], eventId: string): Battle | nul
       (b) => b.eventId === eventId && b.estado !== "oculta" && b.ronda.trim().toLowerCase() === "final"
     ) ?? null
   );
+}
+
+/**
+ * El tercer puesto no se sube como video aparte: se juega dentro del video de la Final.
+ * Si la hoja lo deja sin enlace, hereda el de la Final de su fecha y se marca como compartido.
+ * Si la hoja trae un enlace propio (por ejemplo con `&t=` al minuto exacto), ese manda.
+ */
+export function shareFinalVideoWithThirdPlace(battles: Battle[]): Battle[] {
+  return battles.map((b) => {
+    if (b.youtubeUrl || !isThirdPlace(b.ronda)) return b;
+    const final = getFinalBattle(battles, b.eventId);
+    return final?.youtubeUrl ? { ...b, youtubeUrl: final.youtubeUrl, videoCompartido: true } : b;
+  });
 }
 
 type Round = { ronda: string; battles: Battle[] };

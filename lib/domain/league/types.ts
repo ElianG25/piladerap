@@ -65,6 +65,8 @@ export type Battle = {
   puntosMc1: number;
   puntosMc2: number;
   notas: string;
+  /** El video no es propio: se heredó del de la Final (el tercer puesto se juega dentro de ese video). */
+  videoCompartido?: boolean;
 };
 
 /**

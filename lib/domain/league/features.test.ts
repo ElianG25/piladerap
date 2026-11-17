@@ -4,6 +4,7 @@ import { getHeadToHead, getRivals } from "./headToHead";
 import { getChampionsHall, getSeasonRecords } from "./records";
 import { mcSlug } from "./mcPhoto";
 import { battlePoints } from "./scoring";
+import { shareFinalVideoWithThirdPlace } from "./rounds";
 import { getMcBattles, summarizeMcBattles } from "./profile";
 import type { Battle, LeagueEvent, RankingItem } from "./types";
 
@@ -129,5 +130,29 @@ describe("tercer puesto", () => {
     const seq = [bt("f4", "Octavos", "Ana", "X"), bt("f4", "Cuartos", "Ana", "Y"), bt("f4", "Semifinal", "Z", "Ana"), bt("f4", "Tercer Puesto", "Ana", "W")];
     const rec = getSeasonRecords([rk("Ana", 8, 2, 1)], seq, [ev("f4", 4)]);
     expect(rec.find((r) => r.id === "racha")).toBeUndefined(); // 2 seguidas: no llega al mínimo de 3
+  });
+});
+
+describe("video del tercer puesto", () => {
+  const withUrl = (b: Battle, youtubeUrl: string): Battle => ({ ...b, youtubeUrl });
+  const final = withUrl(bt("f4", "Final", "Ana", "Beto"), "https://youtu.be/finalfinal1");
+
+  it("hereda el video de la Final de su fecha y lo marca como compartido", () => {
+    const [, third] = shareFinalVideoWithThirdPlace([final, bt("f4", "Tercer Puesto", "Cris", "Dani")]);
+    expect(third.youtubeUrl).toBe(final.youtubeUrl);
+    expect(third.videoCompartido).toBe(true);
+  });
+
+  it("si la hoja trae un enlace propio, ese manda", () => {
+    const own = withUrl(bt("f4", "Tercer Puesto", "Cris", "Dani"), "https://youtu.be/finalfinal1?t=30");
+    const [, third] = shareFinalVideoWithThirdPlace([final, own]);
+    expect(third.youtubeUrl).toBe("https://youtu.be/finalfinal1?t=30");
+    expect(third.videoCompartido).toBeUndefined();
+  });
+
+  it("no toma el video de la Final de otra fecha ni toca otras rondas", () => {
+    const out = shareFinalVideoWithThirdPlace([final, bt("f3", "Tercer Puesto", "Cris", "Dani"), bt("f4", "Semifinal", "Ana", "Cris")]);
+    expect(out[1].youtubeUrl).toBe("");
+    expect(out[2].youtubeUrl).toBe("");
   });
 });

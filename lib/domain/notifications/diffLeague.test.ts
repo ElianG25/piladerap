@@ -88,6 +88,12 @@ describe("diffLeagueForNotifications", () => {
     expect(result.find((r) => r.kind === "new_video")!.body).toContain("A vs B");
   });
 
+  it("un video heredado de la Final no cuenta como video nuevo", () => {
+    const previous = mkLeague({ battles: [mkBattle({ battleId: "b3", ronda: "Tercer Puesto", youtubeUrl: "" })] });
+    const current = mkLeague({ battles: [mkBattle({ battleId: "b3", ronda: "Tercer Puesto", youtubeUrl: "https://youtu.be/x", videoCompartido: true })] });
+    expect(diffLeagueForNotifications(previous, current).map((r) => r.kind)).not.toContain("new_video");
+  });
+
   it("no notifica si el video ya estaba antes", () => {
     const previous = mkLeague({ battles: [mkBattle({ battleId: "b1", youtubeUrl: "https://youtu.be/x" })] });
     const current = mkLeague({ battles: [mkBattle({ battleId: "b1", youtubeUrl: "https://youtu.be/x" })] });

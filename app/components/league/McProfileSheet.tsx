@@ -220,7 +220,7 @@ export function McProfileSheet({ mc, battles, events, movement, onClose, onPlay 
                             <li key={r.battle.battleId} className="flex items-center gap-3 py-2.5">
                               <div className="min-w-0 flex-1">
                                 <p className="break-words text-sm font-bold uppercase">vs {r.rival}</p>
-                                <p className="text-xs text-muted-ink">{r.battle.ronda}{r.tercerPuesto ? " · punto extra, no cuenta como victoria ni derrota" : r.replica ? " · réplica" : ""}</p>
+                                <p className="text-xs text-muted-ink">{r.battle.ronda}{r.tercerPuesto ? " · punto extra, no cuenta como victoria ni derrota" : r.replica ? " · réplica" : ""}{r.battle.videoCompartido ? " · en el video de la Final" : ""}</p>
                               </div>
                               <span className={`px-2 py-1 text-xs font-bold uppercase ${r.won ? "bg-pila text-ink" : "border-2 border-ink-line text-muted-ink"}`}>
                                 {r.won ? "Ganó" : "Perdió"} <span className="num">+{r.puntos}</span>

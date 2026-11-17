@@ -29,7 +29,7 @@ export function LatestBattles({ battles, latestEvent, onNavigate }: LatestBattle
   const picks = useMemo(() => {
     if (!latestEvent) return [];
     return battles
-      .filter((b) => b.eventId === latestEvent.eventId && getYouTubeId(b.youtubeUrl))
+      .filter((b) => b.eventId === latestEvent.eventId && !b.videoCompartido && getYouTubeId(b.youtubeUrl))
       .sort((a, b) => priority(a.ronda) - priority(b.ronda) || a.orden - b.orden)
       .slice(0, 4);
   }, [battles, latestEvent]);

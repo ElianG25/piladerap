@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { shareFinalVideoWithThirdPlace } from "@/lib/domain/league/rounds";
 import type { LeagueEvent, LeaguePayload, RankingItem, Battle, Registration, Participant, MediaItem } from "@/lib/domain/league/types";
 
 /* ── Coerciones seguras ──────────────────────────────────────────── */
@@ -157,7 +158,7 @@ export function adaptPayload(raw: Record<string, unknown>): { ok: true; league: 
     registrations: parseArray(rawLeague.registrations, RegistrationSchema, "registrations"),
     participants: parseArray(rawLeague.participants, ParticipantSchema, "participants"),
     ranking: parseArray(rawLeague.ranking, RankingSchema, "ranking"),
-    battles: parseArray(rawLeague.battles, BattleSchema, "battles"),
+    battles: shareFinalVideoWithThirdPlace(parseArray(rawLeague.battles, BattleSchema, "battles")),
     media: parseArray(rawLeague.media, MediaSchema, "media"),
     capacity: normalizeCapacity(rawLeague.capacity),
   };

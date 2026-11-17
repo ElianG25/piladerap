@@ -145,7 +145,8 @@ export function diffLeagueForNotifications(
   }
 
   for (const battle of current.battles) {
-    if (!battle.youtubeUrl) continue;
+    // Un video heredado de la Final no es un video nuevo: ya se avisa con el de la Final.
+    if (!battle.youtubeUrl || battle.videoCompartido) continue;
     const prevBattle = previous.battles.find((b) => b.battleId === battle.battleId);
     if (!prevBattle?.youtubeUrl) {
       events.push(buildNewVideoEvent(battle));
